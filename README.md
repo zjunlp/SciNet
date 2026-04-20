@@ -24,29 +24,29 @@
 
 ## 📑 Table of Contents
 
-- [✨ Overview](##✨ Overview)
-- [🔍 Scope](##🔍 Scope)
-- [🧩 Supported Tasks](##🧩 Supported Tasks)
-- [🏗️ Workflow](##🏗️ Workflow)
-- [📦 Installation](##📦 Installation)
-- [⚙️ Configuration](##⚙️ Configuration)
-- [🛠️ GROBID](##🛠️ GROBID)
-- [📂 Repository Layout](##📂 Repository Layout)
-- [🚀 Quick Start](##🚀 Quick Start)
-- [🧪 Run Tasks](##🧪 Run Tasks)
-  - [`grounded_review`](### `grounded_review`)
-  - [`topic_trend_review`](### `topic_trend_review`)
-  - [`related_authors`](### `related_authors`)
-  - [`author_profile`](### `author_profile`)
-  - [`idea_generation`](### `idea_generation`)
-- [📁 Request Files](## 📁 Request Files)
-- [✅ Testing](## ✅ Testing)
-- [📝 TODO](## 📝 TODO)
-- [✍️ Citation](## ✍️ Citation)
+- [✨ Overview](##-✨-Overview)
+- [🔍 Scope](##-🔍-Scope)
+- [🧩 Supported Tasks](##-🧩-Supported-Tasks)
+- [🏗️ Workflow](##-🏗️-Workflow)
+- [📦 Installation](##-📦-Installation)
+- [⚙️ Configuration](##-⚙️-Configuration)
+- [🛠️ GROBID](##-🛠️-GROBID)
+- [📂 Repository Layout](##-📂-Repository-Layout)
+- [🚀 Quick Start](##-🚀-Quick-Start)
+- [🧪 Run Tasks](##-🧪-Run-Tasks)
+  - [`grounded_review`](###-`grounded_review`)
+  - [`topic_trend_review`](###-`topic_trend_review`)
+  - [`related_authors`](###-`related_authors`)
+  - [`author_profile`](###-`author_profile`)
+  - [`idea_generation`](###-`idea_generation`)
+- [📁 Request Files](##-📁-Request-Files)
+- [✅ Testing](##-✅-Testing)
+- [📝 TODO](##-📝-TODO)
+- [✍️ Citation](##-✍️-Citation)
 
 ## ✨ Overview
 
-SciNet, a large-scale, multi-disciplinary, heterogeneous academic resource knowledge graph designed as a panoramic scientific evolution network. By integrating over 43M papers from 26 disciplines, and a total of 157M entites and 3B triplets, SciNet provides a structured topological cognitive substrate that dismantles disciplinary barriers and furnishes AI agents with a global perspective.
+SciNet is a large-scale, multi-disciplinary, heterogeneous academic resource knowledge graph designed as a panoramic scientific evolution network. By integrating over 43M papers from 26 disciplines, and a total of 157M entites and 3B triplets, SciNet provides a structured topological cognitive substrate that dismantles disciplinary barriers and furnishes AI agents with a global perspective.
 
 <img src="imgs/field_distribution_pie.png" alt="field_distribution_pie" style="zoom:7%;" />
 
