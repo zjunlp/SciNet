@@ -1,22 +1,64 @@
-# SciNet
-
 <div align="center">
-  <h1>SciNet: Literature-Grounded Research Workflows</h1>
+  <h1>SciNet: A Large-Scale Knowledge Graph for Automated Scientific Research</h1>
 </div>
 
 <p align="center">
-  Open-source client for running literature-grounded scientific research tasks on top of a hosted <code>SciNet API</code>.
+  Open-source client for running literature-grounded scientific research tasks on top of SciNet API.
 </p>
-
 <p align="center">
-  <img src="https://img.shields.io/badge/Python-3.10%2B-blue" alt="Python 3.10+">
-  <img src="https://img.shields.io/badge/Tasks-5-success" alt="5 Tasks">
-  <img src="https://img.shields.io/badge/Runtime-CLI-orange" alt="CLI">
+  <a href="https://arxiv.org/abs/2602.14367">📄arXiv</a>
+</p>
+<p align="center">
+  <a href="https://github.com/zjunlp/SciNet">
+  	<img src="https://awesome.re/badge.svg" alt="Awesome">
+  </a>
+  <a href="https://github.com/zjunlp/SciNet/blob/main/LICENSE">
+    <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License: MIT">
+  </a>
+  <img src="https://img.shields.io/github/last-commit/zjunlp/SciNet?color=blue" alt="Last Commit">
+  <img src="https://img.shields.io/badge/PRs-Welcome-red" alt="PRs Welcome">
 </p>
 
----
+
+------
+
+## 📑 Table of Contents
+
+- [✨ Overview](##✨ Overview)
+- [🔍 Scope](##🔍 Scope)
+- [🧩 Supported Tasks](##🧩 Supported Tasks)
+- [🏗️ Workflow](##🏗️ Workflow)
+- [📦 Installation](##📦 Installation)
+- [⚙️ Configuration](##⚙️ Configuration)
+- [🛠️ GROBID](##🛠️ GROBID)
+- [📂 Repository Layout](##📂 Repository Layout)
+- [🚀 Quick Start](##🚀 Quick Start)
+- [🧪 Run Tasks](##🧪 Run Tasks)
+  - [`grounded_review`](### `grounded_review`)
+  - [`topic_trend_review`](### `topic_trend_review`)
+  - [`related_authors`](### `related_authors`)
+  - [`author_profile`](### `author_profile`)
+  - [`idea_generation`](### `idea_generation`)
+- [📁 Request Files](## 📁 Request Files)
+- [✅ Testing](## ✅ Testing)
+- [📝 TODO](## 📝 TODO)
+- [✍️ Citation](## ✍️ Citation)
 
 ## ✨ Overview
+
+SciNet, a large-scale, multi-disciplinary, heterogeneous academic resource knowledge graph designed as a panoramic scientific evolution network. By integrating over 43M papers from 26 disciplines, and a total of 157M entites and 3B triplets, SciNet provides a structured topological cognitive substrate that dismantles disciplinary barriers and furnishes AI agents with a global perspective.
+
+<img src="imgs/field_distribution_pie.png" alt="field_distribution_pie" style="zoom:7%;" />
+
+<div align="center">
+  Discipline Distribution in SciNet
+</div>
+
+<img src="imgs/schema.png" alt="schema" style="zoom:10%;" />
+
+<div align="center">
+  Schema of SciNet
+</div>
 
 This repository provides a runnable client for several scientific research workflows, including idea evaluation, topic review, author discovery, author profiling, and idea generation.
 
@@ -108,6 +150,51 @@ OPENALEX_MAILTO=
 | `OPENALEX_MAILTO` | optional | OpenAlex contact email |
 
 The code still accepts legacy `SCIMAP_*` and `KG2API_*` variables for compatibility, but new setups should use `SCINET_API_*`.
+
+## 🛠️ GROBID
+
+GROBID is a very lightweight information extraction tool specifically designed for technical and scientific publications, which can rapidly extract metadata, including titles, authors, abstracts, and references, from paper’s PDF file. 
+
+GROBID  is needed for:
+
+- `grounded_review`
+- `related_authors` when using `--pdf-path`
+
+Example startup with Docker:
+
+```bash
+docker pull lfoppiano/grobid:latest
+docker run -d --rm --name grobid -p 8070:8070 lfoppiano/grobid:latest
+curl http://127.0.0.1:8070/api/isalive
+```
+
+## 📂 Repository Layout
+
+```text
+.
+├── run_scinet.py
+├── scinet/
+│   ├── cli.py
+│   ├── core/
+│   ├── llm/
+│   ├── search/
+│   ├── tasks/
+│   ├── evidence/
+│   └── renderers/
+├── examples/
+├── tests/
+└── references/
+    └── search/
+```
+
+Key directories:
+
+- `scinet/core/`: shared config, schemas, and API client code
+- `scinet/tasks/`: task dispatch and task-specific logic
+- `scinet/evidence/`: PDF manifest building and evidence grounding
+- `scinet/renderers/`: Markdown rendering
+- `examples/`: runnable request examples
+- `references/search/`: standalone search reference code
 
 ## 🚀 Quick Start
 
@@ -212,53 +299,10 @@ For `grounded_review`, you can also override model-related parameters with:
 
 By default, `grounded_review` uses:
 
-- embedding model: `BAAI/bge-large-en-v1.5`
-- reranker model: `BAAI/bge-reranker-large`
+- embedding model: `BAAI/bge-large-en-v1.5` [huggingface_url](https://huggingface.co/BAAI/bge-large-en-v1.5)
+- reranker model: `BAAI/bge-reranker-large` [huggingface_url](https://huggingface.co/BAAI/bge-reranker-large)
 
 The first run may download these models into the local Hugging Face cache.
-
-## 🛠️ GROBID
-
-GROBID is needed for:
-
-- `grounded_review`
-- `related_authors` when using `--pdf-path`
-
-Example startup with Docker:
-
-```bash
-docker pull lfoppiano/grobid:latest
-docker run -d --rm --name grobid -p 8070:8070 lfoppiano/grobid:latest
-curl http://127.0.0.1:8070/api/isalive
-```
-
-## 📂 Repository Layout
-
-```text
-.
-├── run_scinet.py
-├── scinet/
-│   ├── cli.py
-│   ├── core/
-│   ├── llm/
-│   ├── search/
-│   ├── tasks/
-│   ├── evidence/
-│   └── renderers/
-├── examples/
-├── tests/
-└── references/
-    └── search/
-```
-
-Key directories:
-
-- `scinet/core/`: shared config, schemas, and API client code
-- `scinet/tasks/`: task dispatch and task-specific logic
-- `scinet/evidence/`: PDF manifest building and evidence grounding
-- `scinet/renderers/`: Markdown rendering
-- `examples/`: runnable request examples
-- `references/search/`: standalone search reference code
 
 ## ✅ Testing
 
@@ -268,8 +312,20 @@ python3 -m unittest discover -s tests
 
 ## 📝 TODO
 
-- [ ] Add more user-facing CLI capabilities so downstream users and AI agents can invoke retrieval workflows without touching database internals.
-- [ ] Package reusable agent skills for common scientific discovery workflows and expose best practices as easier-to-load components.
-- [ ] Integrate more knowledge forms beyond paper-centric entities, such as datasets, code, standards, theorems, and experimental experience.
-- [ ] Build dedicated benchmarks and evaluation protocols for downstream scientific research tasks supported by SciNet.
-- [ ] Improve dynamic knowledge updates toward a more systematic and frequent refresh mechanism.
+- [ ] **CLI Tools.** Add more user-facing CLI capabilities so downstream users and AI agents can invoke retrieval workflows without touching database internals.
+- [ ] **Skills.** Package reusable agent skills for common scientific discovery workflows and expose best practices as easier-to-load components.
+- [ ] **More Knowledge.** Integrate more knowledge forms beyond paper-centric entities, such as datasets, code, standards, theorems, and experimental experience.
+- [ ] **Benchmark and Evaluation.** Build dedicated benchmarks and evaluation protocols for downstream scientific research tasks supported by SciNet.
+- [ ] **Dynamic Update**Improve dynamic knowledge updates toward a more systematic and frequent refresh mechanism.
+
+## ✍️ Citation
+
+If you find our work helpful, please use the following citations.
+
+```
+
+```
+
+### License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
