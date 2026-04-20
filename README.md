@@ -1,1 +1,1 @@
-# SciMap
+# SciNet
