@@ -18,7 +18,7 @@
   <img src="https://img.shields.io/github/last-commit/zjunlp/SciNet?color=blue" alt="Last Commit">
   <img src="https://img.shields.io/badge/PRs-Welcome-red" alt="PRs Welcome">
 </p>
-
+Our KG backend is currently undergoing intensive deployment and testing, and will be released within one week! Thank you for your patient waiting!
 
 ------
 
