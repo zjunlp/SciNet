@@ -1,0 +1,9 @@
+{
+  "task_type": "topic_trend_review",
+  "input": {
+    "topic_text": "research idea evaluation with large language models"
+  },
+  "params": {
+    "final_paper_count_for_summary": 20
+  }
+}

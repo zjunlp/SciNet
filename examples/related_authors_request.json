@@ -1,0 +1,10 @@
+{
+  "task_type": "related_authors",
+  "input": {
+    "idea_text": "knowledge-grounded evaluation of scientific research ideas"
+  },
+  "params": {
+    "author_top_k": 8,
+    "author_support_top_k": 3
+  }
+}

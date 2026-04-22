@@ -1,0 +1,9 @@
+{
+  "task_type": "author_profile",
+  "input": {
+    "author_name": "Geoffrey Hinton"
+  },
+  "params": {
+    "representative_paper_top_k": 8
+  }
+}

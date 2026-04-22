@@ -1,0 +1,14 @@
+{
+  "embedding_model": "BAAI/bge-large-en-v1.5",
+  "reranker_model": "BAAI/bge-reranker-large",
+  "grounding_device": "cpu",
+  "use_env_proxy": true,
+  "disable_llm_ranking": true,
+  "search_final_top_k": 6,
+  "manifest_top_k": 6,
+  "dense_candidate_k": 12,
+  "grounding_final_top_k": 4,
+  "max_paragraphs_per_paper": 1,
+  "enable_grounding_refinement": true,
+  "disable_experiment_grounding": true
+}
