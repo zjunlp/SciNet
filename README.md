@@ -26,6 +26,7 @@
 - [✨ Overview](#-overview)
 - [🧩 Supported Tasks](#-supported-tasks)
 - [🛠️ GROBID](#-grobid)
+- [📂 Layout](#-repository-layout)
 - [🚀 Quick Start](#-quick-start)
 - [🧪 Run Tasks](#-run-tasks)
   - [`Idea Grounding and Evaluation`](#idea-grounding-and-evaluation)
@@ -90,6 +91,14 @@ docker pull lfoppiano/grobid:latest
 docker run -d --rm --name grobid -p 8070:8070 lfoppiano/grobid:latest
 curl http://127.0.0.1:8070/api/isalive
 ```
+
+## 📂 Layout
+
+This repository is a lightweight client for SciNet workflows.
+
+- `run_scinet.py`: main entrypoint for runs
+- `scinet/`: main runtime package, including CLI handling, task dispatch, retrieval, grounding, and Markdown rendering
+- `references/search/`: reference and demonstration code for the search logic; it is kept for inspection and illustration, and is not part of the default runtime path
 
 ## 🚀 Quick Start
 
@@ -168,12 +177,6 @@ Each run creates a directory under `runs/` containing:
 - `request.json`
 - `result.json`
 - `result.md`
-
-Repository layout:
-
-- `run_scinet.py`: main entrypoint
-- `scinet/`: core runtime code for CLI, tasks, retrieval, grounding, and rendering
-- `references/search/`: standalone search reference code, not part of the main runtime
 
 ## 🧪 Run Tasks
 
