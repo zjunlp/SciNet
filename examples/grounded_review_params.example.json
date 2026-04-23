@@ -1,4 +1,0 @@
-{
-  "embedding_model": "BAAI/bge-large-en-v1.5",
-  "reranker_model": "BAAI/bge-reranker-large"
-}

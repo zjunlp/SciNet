@@ -86,7 +86,7 @@ def _render_author_table(authors: list[dict[str, Any]]) -> list[str]:
 def _render_grounding_result(response: dict[str, Any]) -> str:
     result = response["result"]
     lines = [
-        "# Task 1: Grounded Review",
+        f"# {TASK_GROUNDED_REVIEW}",
         "",
         "## Input",
         "",
@@ -227,7 +227,7 @@ def _render_trend_review(response: dict[str, Any]) -> str:
     result = response["result"]
     trend_summary = result.get("trend_summary", {})
     lines = [
-        "# Task 2: Topic Trend Review",
+        f"# {TASK_TOPIC_TREND_REVIEW}",
         "",
         "## Input",
         "",
@@ -282,7 +282,7 @@ def _render_trend_review(response: dict[str, Any]) -> str:
 def _render_related_authors(response: dict[str, Any]) -> str:
     result = response["result"]
     lines = [
-        "# Task 3: Related Authors",
+        f"# {TASK_RELATED_AUTHORS}",
         "",
         "## Input",
         "",
@@ -305,7 +305,7 @@ def _render_related_authors(response: dict[str, Any]) -> str:
 def _render_author_profile(response: dict[str, Any]) -> str:
     result = response["result"]
     lines = [
-        "# Task 4: Author Profile",
+        f"# {TASK_AUTHOR_PROFILE}",
         "",
         "## Input",
         "",
@@ -363,7 +363,7 @@ def _render_author_profile(response: dict[str, Any]) -> str:
 def _render_idea_generation(response: dict[str, Any]) -> str:
     result = response["result"]
     lines = [
-        "# Task 5: AI Idea Generation",
+        f"# {TASK_IDEA_GENERATION}",
         "",
         "## Input",
         "",

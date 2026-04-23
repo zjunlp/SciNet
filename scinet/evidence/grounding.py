@@ -8,8 +8,6 @@ import concurrent.futures
 import hashlib
 import json
 import re
-import urllib.error
-import urllib.request
 from dataclasses import asdict, dataclass
 from datetime import datetime
 from pathlib import Path
@@ -18,7 +16,8 @@ from typing import Any
 import numpy as np
 from sentence_transformers import CrossEncoder, SentenceTransformer
 
-from ..core.common import DEFAULT_LLM_BASE_URL, DEFAULT_LLM_MODEL_NAME
+from ..llm import resolve_llm_settings
+from ..llm.client import build_llm_client
 
 BASE_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = BASE_DIR.parents[1]
@@ -28,8 +27,6 @@ DEFAULT_TARGET_DIR = Path("/tmp/scinet_grounding/target")
 DEFAULT_RESULT_DIR = Path("/tmp/scinet_grounding/result")
 DEFAULT_EMBEDDING_MODEL = "BAAI/bge-large-en-v1.5"
 DEFAULT_RERANKER_MODEL = "BAAI/bge-reranker-large"
-DEFAULT_QUERY_API_URL = DEFAULT_LLM_BASE_URL.rstrip("/") + "/chat/completions"
-DEFAULT_QUERY_MODEL = DEFAULT_LLM_MODEL_NAME
 DEFAULT_QUERY_PREFIX = "Represent this sentence for searching relevant passages: "
 EXTRACTION_SYSTEM_PROMPT = (
     "You are an expert scientific analysis agent. "
@@ -378,8 +375,9 @@ class PaperContextRecord:
 
 @dataclass(frozen=True)
 class QueryGeneratorConfig:
-    api_url: str = DEFAULT_QUERY_API_URL
-    model: str = DEFAULT_QUERY_MODEL
+    provider: str | None = None
+    api_url: str | None = None
+    model: str | None = None
     env_path: Path = DEFAULT_ENV_PATH
     timeout: int = 60
     max_tokens: int = 1000
@@ -389,13 +387,35 @@ class QueryGeneratorConfig:
 class GroundingLlmClient:
     def __init__(self, config: QueryGeneratorConfig | None = None) -> None:
         self.config = config or QueryGeneratorConfig()
-        self.api_key = load_api_key(self.config.env_path)
-        self.opener = self._build_opener()
-
-    def _build_opener(self) -> urllib.request.OpenerDirector:
-        if self.config.use_env_proxy:
-            return urllib.request.build_opener()
-        return urllib.request.build_opener(urllib.request.ProxyHandler({}))
+        self.settings = resolve_llm_settings(
+            self.config.env_path,
+            {
+                "query_provider": self.config.provider,
+                "query_api_url": self.config.api_url,
+                "query_model": self.config.model,
+                "query_timeout": self.config.timeout,
+            },
+            provider_keys=("query_provider",),
+            base_url_keys=("query_base_url", "query_api_url"),
+            model_keys=("query_model",),
+            timeout_keys=("query_timeout",),
+        )
+        self.client = build_llm_client(
+            self.config.env_path,
+            {
+                "query_provider": self.config.provider,
+                "query_api_url": self.config.api_url,
+                "query_model": self.config.model,
+                "query_timeout": self.config.timeout,
+            },
+            provider_keys=("query_provider",),
+            base_url_keys=("query_base_url", "query_api_url"),
+            model_keys=("query_model",),
+            timeout_keys=("query_timeout",),
+            use_env_proxy=self.config.use_env_proxy,
+        )
+        self.provider = self.settings.provider
+        self.model_name = self.settings.model
 
     def _request_content(
         self,
@@ -404,41 +424,17 @@ class GroundingLlmClient:
         user_prompt: str,
         max_tokens: int | None = None,
     ) -> str:
-        payload = {
-            "model": self.config.model,
-            "messages": [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt},
-            ],
-            "temperature": 0.1,
-        }
-        if max_tokens is not None:
-            payload["max_tokens"] = max_tokens
-
-        request = urllib.request.Request(
-            self.config.api_url,
-            data=json.dumps(payload).encode("utf-8"),
-            headers={
-                "Content-Type": "application/json",
-                "Authorization": f"Bearer {self.api_key}",
-            },
-            method="POST",
-        )
-
         try:
-            with self.opener.open(request, timeout=self.config.timeout) as response:
-                body = response.read().decode("utf-8")
-        except urllib.error.HTTPError as exc:
-            error_body = exc.read().decode("utf-8", errors="replace")
-            raise GroundingError(f"Grounding LLM request failed with HTTP {exc.code}: {error_body}") from exc
-        except urllib.error.URLError as exc:
-            raise GroundingError(f"Grounding LLM request failed: {exc}") from exc
-
-        try:
-            response_payload: dict[str, Any] = json.loads(body)
-            return str(response_payload["choices"][0]["message"]["content"])
+            return self.client.chat_text(
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt},
+                ],
+                temperature=0.1,
+                max_tokens=max_tokens,
+            )
         except Exception as exc:
-            raise GroundingError(f"Unexpected grounding LLM response: {body}") from exc
+            raise GroundingError(f"Grounding LLM request failed: {exc}") from exc
 
     def extract_structure(self, idea_text: str) -> StructuredExtraction:
         content = self._request_content(
@@ -663,8 +659,17 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--min-paragraph-chars", type=int, default=80, help="Minimum paragraph character length.")
     parser.add_argument("--min-paragraph-words", type=int, default=8, help="Minimum paragraph word count.")
 
-    parser.add_argument("--query-model", default=DEFAULT_QUERY_MODEL, help="Model used for grounding LLM calls.")
-    parser.add_argument("--query-api-url", default=DEFAULT_QUERY_API_URL, help="Chat completions endpoint for grounding LLM calls.")
+    parser.add_argument(
+        "--query-provider",
+        default=None,
+        help="LLM provider for grounding calls. Defaults to LLM_PROVIDER or openai_compatible.",
+    )
+    parser.add_argument("--query-model", default=None, help="Model used for grounding LLM calls.")
+    parser.add_argument(
+        "--query-api-url",
+        default=None,
+        help="Optional OpenAI-compatible chat completions endpoint override for grounding LLM calls.",
+    )
     parser.add_argument("--query-timeout", type=int, default=60, help="Grounding query generation timeout in seconds.")
     parser.add_argument("--query-max-tokens", type=int, default=1000, help="Grounding query generation max tokens.")
     parser.add_argument(
@@ -762,28 +767,6 @@ def normalize_model_name_or_path(value: str | None) -> str:
     if candidate.exists():
         return str(candidate.resolve())
     return model_name_or_path
-
-
-def load_api_key(env_path: Path) -> str:
-    env_values = load_env_values(env_path)
-    api_key = normalize_whitespace(env_values.get("OPENAI_API_KEY"))
-    if not api_key:
-        raise GroundingError(f"No grounding LLM API key found in {env_path}")
-    return api_key
-
-
-def load_env_values(env_path: Path) -> dict[str, str]:
-    if not env_path.exists():
-        raise GroundingError(f".env not found: {env_path}")
-
-    values: dict[str, str] = {}
-    for raw_line in env_path.read_text(encoding="utf-8").splitlines():
-        line = raw_line.strip()
-        if not line or line.startswith("#") or "=" not in line:
-            continue
-        key, value = line.split("=", 1)
-        values[key.strip()] = value.strip().strip('"').strip("'")
-    return values
 
 
 def strip_code_fence(text: str) -> str:
@@ -1613,23 +1596,25 @@ def run_experiment_grounding(
             "stats": {"attempted": 0, "succeeded": 0, "failed": 0},
         }
 
+    config = QueryGeneratorConfig(
+        provider=getattr(args, "query_provider", None),
+        api_url=args.query_api_url,
+        model=args.query_model,
+        env_path=Path(args.env),
+        timeout=args.query_timeout,
+        max_tokens=args.query_max_tokens,
+        use_env_proxy=args.use_env_proxy,
+    )
+    model_name = None
     try:
-        generator = GroundingLlmClient(
-            QueryGeneratorConfig(
-                api_url=args.query_api_url,
-                model=args.query_model,
-                env_path=Path(args.env),
-                timeout=args.query_timeout,
-                max_tokens=args.query_max_tokens,
-                use_env_proxy=args.use_env_proxy,
-            )
-        )
+        generator = GroundingLlmClient(config)
+        model_name = generator.model_name
     except Exception as exc:
         return {
             "requested": True,
             "status": "setup_failed",
             "error": str(exc),
-            "model": args.query_model,
+            "model": model_name or args.query_model,
             "paper_count": len(selected_entries),
             "idea_experimental_focus": list(idea_extraction.experimental_focus),
             "results": [],
@@ -1676,7 +1661,7 @@ def run_experiment_grounding(
         "requested": True,
         "status": status,
         "error": error,
-        "model": args.query_model,
+        "model": generator.model_name,
         "paper_count": len(selected_entries),
         "idea_experimental_focus": list(idea_extraction.experimental_focus),
         "results": finalized_results,
@@ -1858,6 +1843,7 @@ def generate_queries(
 ) -> tuple[list[AtomicQuery], StructuredExtraction, dict[str, Any]]:
     generator = GroundingLlmClient(
         QueryGeneratorConfig(
+            provider=getattr(args, "query_provider", None),
             api_url=args.query_api_url,
             model=args.query_model,
             env_path=Path(args.env),
@@ -1881,6 +1867,8 @@ def generate_queries(
         "fallback_used": bool(query_meta.get("fallback_used")),
         "fallback_reason": query_meta.get("fallback_reason"),
         "llm_error": query_meta.get("llm_error"),
+        "model": generator.model_name,
+        "provider": generator.provider,
     }
 
 
@@ -1946,6 +1934,7 @@ def run_grounding(args: argparse.Namespace) -> dict[str, Any]:
         try:
             refinement_generator = GroundingLlmClient(
                 QueryGeneratorConfig(
+                    provider=getattr(args, "query_provider", None),
                     api_url=args.query_api_url,
                     model=args.query_model,
                     env_path=Path(args.env),
@@ -2095,7 +2084,8 @@ def run_grounding(args: argparse.Namespace) -> dict[str, Any]:
             "fallback_used": bool(query_generation_meta.get("fallback_used")),
             "fallback_reason": query_generation_meta.get("fallback_reason"),
             "llm_error": query_generation_meta.get("llm_error"),
-            "model": args.query_model,
+            "model": query_generation_meta.get("model"),
+            "provider": query_generation_meta.get("provider"),
             "query_count": len(queries),
             "queries": [query.to_dict() for query in queries],
         },
@@ -2111,7 +2101,7 @@ def run_grounding(args: argparse.Namespace) -> dict[str, Any]:
             "refinement_requested": refinement_requested,
             "refinement_status": refinement_status,
             "refinement_error": refinement_error,
-            "refinement_model": args.query_model if refinement_requested else None,
+            "refinement_model": refinement_generator.model_name if refinement_generator is not None else None,
             "refinement_context_window": args.refinement_context_window,
             "refinement_stats": refinement_stats,
             "results": retrieval_results,

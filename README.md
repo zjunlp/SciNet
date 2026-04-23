@@ -18,29 +18,21 @@
   <img src="https://img.shields.io/github/last-commit/zjunlp/SciNet?color=blue" alt="Last Commit">
   <img src="https://img.shields.io/badge/PRs-Welcome-red" alt="PRs Welcome">
 </p>
-Our KG backend is currently undergoing intensive deployment and testing, and will be released within one week! Thank you for your patient waiting!
 
 ------
 
 ## 📑 Table of Contents
 
 - [✨ Overview](#-overview)
-- [🔍 Scope](#-scope)
 - [🧩 Supported Tasks](#-supported-tasks)
-- [🏗️ Workflow](#-workflow)
-- [📦 Installation](#-installation)
-- [⚙️ Configuration](#-configuration)
 - [🛠️ GROBID](#-grobid)
-- [📂 Repository Layout](#-repository-layout)
 - [🚀 Quick Start](#-quick-start)
 - [🧪 Run Tasks](#-run-tasks)
-  - [`grounded_review`](#grounded_review)
-  - [`topic_trend_review`](#topic_trend_review)
-  - [`related_authors`](#related_authors)
-  - [`author_profile`](#author_profile)
-  - [`idea_generation`](#idea_generation)
-- [📁 Request Files](#-request-files)
-- [✅ Testing](#-testing)
+  - [`Idea Grounding and Evaluation`](#idea-grounding-and-evaluation)
+  - [`Idea Generation`](#idea-generation)
+  - [`Research Trend Predicting`](#research-trend-predicting)
+  - [`Related Author Retrieval`](#related-author-retrieval)
+  - [`Researcher Background Review`](#researcher-background-review)
 - [📝 TODO](#-todo)
 - [✍️ Citation](#-citation)
 
@@ -62,6 +54,8 @@ SciNet is a large-scale, multi-disciplinary, heterogeneous academic resource kno
 
 This repository provides a runnable client for several scientific research workflows, including idea evaluation, topic review, author discovery, author profiling, and idea generation.
 
+Each run is driven by CLI inputs plus optional runtime parameter overrides. The client also writes a `request.json` file into the run directory so every execution remains easy to inspect and reproduce later.
+
 The local client is responsible for:
 
 - building a structured request
@@ -70,95 +64,24 @@ The local client is responsible for:
 
 Users do **not** need to connect to Neo4j or other database components directly.
 
-## 🔍 Scope
-
-This repository is intended to be a lightweight, runnable demo client.
-
-- `run_scinet.py` is the main entrypoint.
-- `scinet/` contains the runnable workflow code.
-- `references/search/` is a reference implementation for the standalone search stack and is **not** part of the main demo runtime.
-
 ## 🧩 Supported Tasks
 
 | Task Type | Required Input | Main Output |
 | --- | --- | --- |
-| `grounded_review` | `--idea-text` or `--pdf-path` | grounded evidence, paragraph matches, and idea-level analysis |
-| `topic_trend_review` | `--topic-text` | topic evolution summary and representative papers |
-| `related_authors` | `--idea-text` or `--pdf-path` | related authors and supporting papers |
-| `author_profile` | `--author-name` | research trajectory and representative works |
-| `idea_generation` | `--topic-text` | generated ideas grounded in retrieved literature |
-
-## 🏗️ Workflow
-
-```text
-Input -> Local Planning -> SciNet API Retrieval -> Local Post-processing -> JSON + Markdown Reports
-```
-
-Typical post-processing includes reranking, PDF extraction, evidence grounding, and response rendering.
-
-## 📦 Installation
-
-### 1. Create an environment
-
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-```
-
-### 2. Install dependencies
-
-```bash
-pip install -U pip
-pip install -r requirements.txt
-```
-
-## ⚙️ Configuration
-
-### 1. Create the environment file
-
-```bash
-cp .env.example .env
-```
-
-### 2. Fill in the required variables
-
-```env
-SCINET_API_BASE_URL=https://your-scinet-api.example.com
-SCINET_API_KEY=replace-me
-SCINET_API_TIMEOUT=120
-
-OPENAI_API_KEY=replace-me
-OPENAI_BASE_URL=https://your-openai-compatible-endpoint/v1
-OPENAI_MODEL=your-model-name
-
-GROBID_BASE_URL=http://127.0.0.1:8070
-OA_API_KEY=
-OPENALEX_MAILTO=
-```
-
-### 3. Know what is required
-
-| Variable | Required For | Notes |
-| --- | --- | --- |
-| `SCINET_API_BASE_URL` | all tasks | hosted `SciNet API` base URL |
-| `SCINET_API_KEY` | all tasks | sent as `X-API-Key` |
-| `OPENAI_API_KEY` | all tasks | used for planning and LLM summarization |
-| `OPENAI_BASE_URL` | all tasks | OpenAI-compatible endpoint |
-| `OPENAI_MODEL` | all tasks | chat model name |
-| `GROBID_BASE_URL` | PDF tasks | needed for `--pdf-path` flows |
-| `OA_API_KEY` | optional | OpenAlex fallback support |
-| `OPENALEX_MAILTO` | optional | OpenAlex contact email |
-
-The code still accepts legacy `SCIMAP_*` and `KG2API_*` variables for compatibility, but new setups should use `SCINET_API_*`.
+| `Idea Grounding and Evaluation` | `--idea-text` or `--pdf-path` | grounded evidence, paragraph matches, and idea-level analysis |
+| `Idea Generation` | `--topic-text` | generated ideas grounded in retrieved literature |
+| `Research Trend Predicting` | `--topic-text` | topic evolution summary and representative papers |
+| `Related Author Retrieval` | `--idea-text` or `--pdf-path` | related authors and supporting papers |
+| `Researcher Background Review` | `--author-name` | research trajectory and representative works |
 
 ## 🛠️ GROBID
 
-GROBID is a very lightweight information extraction tool specifically designed for technical and scientific publications, which can rapidly extract metadata, including titles, authors, abstracts, and references, from paper’s PDF file. 
+GROBID extracts structured metadata from scientific PDFs, including titles, authors, abstracts, and references.
 
-GROBID  is needed for:
+GROBID is needed for:
 
-- `grounded_review`
-- `related_authors` when using `--pdf-path`
+- `Idea Grounding and Evaluation`
+- `Related Author Retrieval` when using `--pdf-path`
 
 Example startup with Docker:
 
@@ -168,54 +91,77 @@ docker run -d --rm --name grobid -p 8070:8070 lfoppiano/grobid:latest
 curl http://127.0.0.1:8070/api/isalive
 ```
 
-## 📂 Repository Layout
-
-```text
-.
-├── run_scinet.py
-├── scinet/
-│   ├── cli.py
-│   ├── core/
-│   ├── llm/
-│   ├── search/
-│   ├── tasks/
-│   ├── evidence/
-│   └── renderers/
-├── examples/
-├── tests/
-└── references/
-    └── search/
-```
-
-Key directories:
-
-- `scinet/core/`: shared config, schemas, and API client code
-- `scinet/tasks/`: task dispatch and task-specific logic
-- `scinet/evidence/`: PDF manifest building and evidence grounding
-- `scinet/renderers/`: Markdown rendering
-- `examples/`: runnable request examples
-- `references/search/`: standalone search reference code
-
 ## 🚀 Quick Start
 
-If you only want the shortest path to a working run:
+Use the following steps to get a working run from a clean checkout.
 
-### 1. Make sure the following services are ready
+### 1. Create an environment and install dependencies
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -U pip
+pip install -r requirements.txt
+```
+
+### 2. Create the environment file
+
+```bash
+cp .env.example .env
+```
+
+Fill in the required variables:
+
+```env
+SCINET_API_BASE_URL=https://your-scinet-api.example.com
+SCINET_API_KEY=replace-me
+SCINET_API_TIMEOUT=120
+
+LLM_PROVIDER=openai_compatible
+LLM_API_KEY=replace-me
+LLM_BASE_URL=https://your-openai-compatible-endpoint/v1
+LLM_MODEL=your-model-name
+
+# Legacy compatibility keys. New setups should prefer LLM_*.
+OPENAI_API_KEY=replace-me
+OPENAI_BASE_URL=https://your-openai-compatible-endpoint/v1
+OPENAI_MODEL=your-model-name
+
+GROBID_BASE_URL=http://127.0.0.1:8070
+OA_API_KEY=
+OPENALEX_MAILTO=
+```
+
+Required variables:
+
+| Variable | Required For | Notes |
+| --- | --- | --- |
+| `SCINET_API_BASE_URL` | all tasks | hosted `SciNet API` base URL |
+| `SCINET_API_KEY` | all tasks | sent as `X-API-Key` |
+| `LLM_PROVIDER` | all tasks | provider selector, currently `openai_compatible` |
+| `LLM_API_KEY` | all tasks | used for planning, reranking, and summarization |
+| `LLM_BASE_URL` | all tasks | OpenAI-compatible base URL |
+| `LLM_MODEL` | all tasks | chat model name |
+| `GROBID_BASE_URL` | PDF tasks | needed for `--pdf-path` flows |
+| `OA_API_KEY` | optional | OpenAlex fallback support |
+| `OPENALEX_MAILTO` | optional | OpenAlex contact email |
+
+### 3. Make sure the required services are ready
 
 - a hosted `SciNet API`
-- an OpenAI-compatible LLM endpoint
+- an LLM endpoint exposed in OpenAI-compatible format
 - GROBID if you want to use `--pdf-path`
 
-### 2. Run a task
+### 4. Run a task
 
 ```bash
 python3 run_scinet.py \
-  --task-type topic_trend_review \
+  --task-type "Research Trend Predicting" \
   --topic-text "research idea evaluation with large language models" \
   --pretty
 ```
 
-### 3. Check the output
+### 5. Check the output
 
 Each run creates a directory under `runs/` containing:
 
@@ -223,13 +169,19 @@ Each run creates a directory under `runs/` containing:
 - `result.json`
 - `result.md`
 
+Repository layout:
+
+- `run_scinet.py`: main entrypoint
+- `scinet/`: core runtime code for CLI, tasks, retrieval, grounding, and rendering
+- `references/search/`: standalone search reference code, not part of the main runtime
+
 ## 🧪 Run Tasks
 
-### `grounded_review`
+### `Idea Grounding and Evaluation`
 
 ```bash
 python3 run_scinet.py \
-  --task-type grounded_review \
+  --task-type "Idea Grounding and Evaluation" \
   --idea-text "Use literature-grounded evidence to evaluate research ideas." \
   --pretty
 ```
@@ -238,77 +190,69 @@ With PDF input:
 
 ```bash
 python3 run_scinet.py \
-  --task-type grounded_review \
+  --task-type "Idea Grounding and Evaluation" \
   --pdf-path /absolute/path/to/paper.pdf \
-  --params-file examples/grounded_review_params.example.json \
+  --params-json '{"search_final_top_k": 15, "manifest_top_k": 10}' \
   --pretty
 ```
 
-### `topic_trend_review`
+### `Idea Generation`
 
 ```bash
 python3 run_scinet.py \
-  --task-type topic_trend_review \
-  --topic-text "research idea evaluation with large language models" \
-  --pretty
-```
-
-### `related_authors`
-
-```bash
-python3 run_scinet.py \
-  --task-type related_authors \
-  --idea-text "knowledge-grounded evaluation of scientific research ideas" \
-  --pretty
-```
-
-### `author_profile`
-
-```bash
-python3 run_scinet.py \
-  --task-type author_profile \
-  --author-name "Geoffrey Hinton" \
-  --pretty
-```
-
-### `idea_generation`
-
-```bash
-python3 run_scinet.py \
-  --task-type idea_generation \
+  --task-type "Idea Generation" \
   --topic-text "scientific idea generation with retrieval-augmented large language models" \
   --pretty
 ```
 
-## 📁 Request Files
-
-You can also run tasks from JSON request files in `examples/`:
+### `Research Trend Predicting`
 
 ```bash
-python3 run_scinet.py --request-file examples/grounded_review_request.json --pretty
-python3 run_scinet.py --request-file examples/topic_trend_review_request.json --pretty
-python3 run_scinet.py --request-file examples/related_authors_request.json --pretty
-python3 run_scinet.py --request-file examples/author_profile_request.json --pretty
-python3 run_scinet.py --request-file examples/idea_generation_request.json --pretty
+python3 run_scinet.py \
+  --task-type "Research Trend Predicting" \
+  --topic-text "research idea evaluation with large language models" \
+  --pretty
 ```
 
-For `grounded_review`, you can also override model-related parameters with:
+### `Related Author Retrieval`
 
-- `examples/grounded_review_params.example.json`
-- `examples/grounded_review_params.cpu.example.json`
+```bash
+python3 run_scinet.py \
+  --task-type "Related Author Retrieval" \
+  --idea-text "knowledge-grounded evaluation of scientific research ideas" \
+  --pretty
+```
 
-By default, `grounded_review` uses:
+### `Researcher Background Review`
+
+```bash
+python3 run_scinet.py \
+  --task-type "Researcher Background Review" \
+  --author-name "Geoffrey Hinton" \
+  --pretty
+```
+
+You can also override task parameters from your own JSON file:
+
+```bash
+python3 run_scinet.py \
+  --task-type "Idea Grounding and Evaluation" \
+  --idea-text "Use literature-grounded evidence to evaluate research ideas." \
+  --params-file /absolute/path/to/params.json \
+  --pretty
+```
+
+For `Idea Grounding and Evaluation`, model-related overrides can be supplied through `--params-file` or `--params-json`.
+
+`grounded_review` also accepts `query_provider`, `query_model`, and `query_api_url` overrides in `params`.
+If omitted, it resolves them from `LLM_PROVIDER`, `LLM_MODEL`, and `LLM_BASE_URL`.
+
+By default, `Idea Grounding and Evaluation` uses:
 
 - embedding model: `BAAI/bge-large-en-v1.5` [huggingface_url](https://huggingface.co/BAAI/bge-large-en-v1.5)
 - reranker model: `BAAI/bge-reranker-large` [huggingface_url](https://huggingface.co/BAAI/bge-reranker-large)
 
 The first run may download these models into the local Hugging Face cache.
-
-## ✅ Testing
-
-```bash
-python3 -m unittest discover -s tests
-```
 
 ## 📝 TODO
 

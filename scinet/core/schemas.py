@@ -7,18 +7,18 @@ from typing import Any
 from .common import DEFAULT_ENV_PATH, DEFAULT_RUN_ROOT
 
 
-TASK_GROUNDED_REVIEW = "grounded_review"
-TASK_TOPIC_TREND_REVIEW = "topic_trend_review"
-TASK_RELATED_AUTHORS = "related_authors"
-TASK_AUTHOR_PROFILE = "author_profile"
-TASK_IDEA_GENERATION = "idea_generation"
+TASK_GROUNDED_REVIEW = "Idea Grounding and Evaluation"
+TASK_IDEA_GENERATION = "Idea Generation"
+TASK_TOPIC_TREND_REVIEW = "Research Trend Predicting"
+TASK_RELATED_AUTHORS = "Related Author Retrieval"
+TASK_AUTHOR_PROFILE = "Researcher Background Review"
 
 SUPPORTED_TASK_TYPES = (
     TASK_GROUNDED_REVIEW,
+    TASK_IDEA_GENERATION,
     TASK_TOPIC_TREND_REVIEW,
     TASK_RELATED_AUTHORS,
     TASK_AUTHOR_PROFILE,
-    TASK_IDEA_GENERATION,
 )
 
 
@@ -34,6 +34,7 @@ DEFAULT_TASK_PARAMS: dict[str, dict[str, Any]] = {
         "disable_experiment_grounding": True,
         "grobid_base_url": "http://127.0.0.1:8070",
         "grounding_device": None,
+        "query_provider": None,
         "query_model": None,
         "query_api_url": None,
         "embedding_model": None,

@@ -8,20 +8,39 @@ import traceback
 from pathlib import Path
 from typing import Any
 
-from .core.common import DEFAULT_ENV_PATH, DEFAULT_RUN_ROOT, normalize_whitespace, read_json, resolve_run_dir, write_json, write_text
-from .core.schemas import SUPPORTED_TASK_TYPES, SciNetRequest
+from .core.common import DEFAULT_ENV_PATH, DEFAULT_RUN_ROOT, normalize_whitespace, resolve_run_dir, write_json, write_text
+from .core.schemas import (
+    SUPPORTED_TASK_TYPES,
+    TASK_AUTHOR_PROFILE,
+    TASK_GROUNDED_REVIEW,
+    TASK_IDEA_GENERATION,
+    TASK_RELATED_AUTHORS,
+    TASK_TOPIC_TREND_REVIEW,
+    SciNetRequest,
+)
 from .renderers.markdown import render_response_markdown
 from .tasks.dispatcher import execute_request
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Run SciNet workflows and emit JSON + Markdown results.")
-    parser.add_argument("--request-file", default=None, help="Path to a JSON request file.")
     parser.add_argument("--task-type", choices=SUPPORTED_TASK_TYPES, default=None, help="Task type to run.")
-    parser.add_argument("--idea-text", default=None, help="Idea text input for grounded_review or related_authors.")
-    parser.add_argument("--pdf-path", default=None, help="PDF input for grounded_review or related_authors.")
-    parser.add_argument("--topic-text", default=None, help="Topic text input for topic_trend_review or idea_generation.")
-    parser.add_argument("--author-name", default=None, help="Author name input for author_profile.")
+    parser.add_argument(
+        "--idea-text",
+        default=None,
+        help=f"Idea text input for {TASK_GROUNDED_REVIEW} or {TASK_RELATED_AUTHORS}.",
+    )
+    parser.add_argument(
+        "--pdf-path",
+        default=None,
+        help=f"PDF input for {TASK_GROUNDED_REVIEW} or {TASK_RELATED_AUTHORS}.",
+    )
+    parser.add_argument(
+        "--topic-text",
+        default=None,
+        help=f"Topic text input for {TASK_TOPIC_TREND_REVIEW} or {TASK_IDEA_GENERATION}.",
+    )
+    parser.add_argument("--author-name", default=None, help=f"Author name input for {TASK_AUTHOR_PROFILE}.")
     parser.add_argument("--params-file", default=None, help="Path to a JSON file with task params overrides.")
     parser.add_argument("--params-json", default=None, help="Inline JSON object for task params overrides.")
     parser.add_argument("--output-root", default=str(DEFAULT_RUN_ROOT), help="Root folder for SciNet runs.")
@@ -48,49 +67,28 @@ def _parse_inline_json(text: str | None) -> dict[str, Any]:
 
 
 def _build_request_from_args(args: argparse.Namespace) -> SciNetRequest:
-    if args.request_file:
-        request_payload = read_json(Path(args.request_file).expanduser().resolve())
-        task_type = normalize_whitespace(request_payload.get("task_type"))
-        input_payload = request_payload.get("input") or request_payload.get("input_payload") or {}
-        params = request_payload.get("params") or {}
-        if not isinstance(input_payload, dict):
-            raise ValueError("request.input must be a JSON object")
-        if not isinstance(params, dict):
-            raise ValueError("request.params must be a JSON object")
-        output_root = Path(request_payload.get("output_root") or args.output_root).expanduser().resolve()
-        env_path = Path(request_payload.get("env") or args.env).expanduser().resolve()
-        run_id = normalize_whitespace(request_payload.get("run_id")) or args.run_id
-        return SciNetRequest(
-            task_type=task_type,
-            input_payload=input_payload,
-            params=params,
-            output_root=output_root,
-            env_path=env_path,
-            run_id=run_id,
-        )
-
     if not args.task_type:
-        raise ValueError("--task-type is required unless --request-file is provided")
+        raise ValueError("--task-type is required")
 
     input_payload: dict[str, Any] = {}
-    if args.task_type in {"grounded_review", "related_authors"}:
+    if args.task_type in {TASK_GROUNDED_REVIEW, TASK_RELATED_AUTHORS}:
         if bool(args.idea_text) == bool(args.pdf_path):
-            raise ValueError("grounded_review and related_authors require exactly one of --idea-text or --pdf-path")
+            raise ValueError(f"{TASK_GROUNDED_REVIEW} and {TASK_RELATED_AUTHORS} require exactly one of --idea-text or --pdf-path")
         if args.idea_text:
             input_payload["idea_text"] = args.idea_text
         else:
             input_payload["pdf_path"] = str(Path(args.pdf_path).expanduser().resolve())
-    elif args.task_type == "topic_trend_review":
+    elif args.task_type == TASK_TOPIC_TREND_REVIEW:
         if not args.topic_text:
-            raise ValueError("topic_trend_review requires --topic-text")
+            raise ValueError(f"{TASK_TOPIC_TREND_REVIEW} requires --topic-text")
         input_payload["topic_text"] = args.topic_text
-    elif args.task_type == "author_profile":
+    elif args.task_type == TASK_AUTHOR_PROFILE:
         if not args.author_name:
-            raise ValueError("author_profile requires --author-name")
+            raise ValueError(f"{TASK_AUTHOR_PROFILE} requires --author-name")
         input_payload["author_name"] = args.author_name
-    elif args.task_type == "idea_generation":
+    elif args.task_type == TASK_IDEA_GENERATION:
         if not args.topic_text:
-            raise ValueError("idea_generation requires --topic-text")
+            raise ValueError(f"{TASK_IDEA_GENERATION} requires --topic-text")
         input_payload["topic_text"] = args.topic_text
 
     params = {}

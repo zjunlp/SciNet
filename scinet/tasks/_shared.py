@@ -14,7 +14,7 @@ from ..core.common import (
     truncate_text,
     write_json,
 )
-from ..llm.client import call_llm_json
+from ..llm import call_llm_json, resolve_llm_settings
 from ..llm.prompts import (
     IDEA_EVALUATION_SYSTEM_PROMPT,
     IDEA_EVALUATION_USER_PROMPT,
@@ -148,17 +148,17 @@ def _run_manifest(
     return manifest, Path(manifest["manifest_path"]).resolve()
 
 
+def _default_query_provider(env_path: Path) -> str | None:
+    return resolve_llm_settings(env_path, {}, require_api_key=False).provider
+
+
 def _default_query_api_url(env_path: Path) -> str | None:
-    env_values = load_env_values(env_path)
-    openai_base = get_env_value(env_values, "OPENAI_BASE_URL")
-    if not openai_base:
-        return None
-    return openai_base.rstrip("/") + "/chat/completions"
+    settings = resolve_llm_settings(env_path, {}, require_api_key=False)
+    return settings.base_url.rstrip("/") + "/chat/completions"
 
 
 def _default_query_model(env_path: Path) -> str | None:
-    env_values = load_env_values(env_path)
-    return get_env_value(env_values, "OPENAI_MODEL")
+    return resolve_llm_settings(env_path, {}, require_api_key=False).model
 
 
 def _run_grounding(
@@ -192,6 +192,9 @@ def _run_grounding(
     cli_args.extend(["--query-max-tokens", str(int(params.get("query_max_tokens") or 1000))])
     cli_args.extend(["--output", str(output_path)])
 
+    query_provider = normalize_whitespace(params.get("query_provider")) or normalize_whitespace(_default_query_provider(env_path))
+    if query_provider:
+        cli_args.extend(["--query-provider", query_provider])
     query_model = normalize_whitespace(params.get("query_model")) or normalize_whitespace(_default_query_model(env_path))
     if query_model:
         cli_args.extend(["--query-model", query_model])
@@ -634,7 +637,7 @@ def execute_topic_trend_review(request: SciNetRequest, run_dir: Path, client: Sc
     params = merge_task_params(request.task_type, request.params)
     topic_text = normalize_whitespace(request.input_payload.get("topic_text") or request.input_payload.get("idea_text"))
     if not topic_text:
-        raise ValueError("topic_trend_review requires topic_text.")
+        raise ValueError(f"{TASK_TOPIC_TREND_REVIEW} requires topic_text.")
 
     search_artifact_dir = ensure_dir(run_dir / "artifacts" / "search")
     plan = _build_search_plan(
@@ -782,7 +785,7 @@ def execute_author_profile(request: SciNetRequest, run_dir: Path, client: SciNet
     params = merge_task_params(request.task_type, request.params)
     author_name = normalize_whitespace(request.input_payload.get("author_name"))
     if not author_name:
-        raise ValueError("author_profile requires author_name.")
+        raise ValueError(f"{TASK_AUTHOR_PROFILE} requires author_name.")
 
     response = client.authors_papers(
         identifier=author_name,
@@ -855,7 +858,7 @@ def execute_idea_generation(request: SciNetRequest, run_dir: Path, client: SciNe
     params = merge_task_params(request.task_type, request.params)
     topic_text = normalize_whitespace(request.input_payload.get("topic_text") or request.input_payload.get("idea_text"))
     if not topic_text:
-        raise ValueError("idea_generation requires topic_text or idea_text.")
+        raise ValueError(f"{TASK_IDEA_GENERATION} requires topic_text or idea_text.")
 
     search_artifact_dir = ensure_dir(run_dir / "artifacts" / "search")
     plan = _build_search_plan(

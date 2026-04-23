@@ -1,9 +1,0 @@
-{
-  "task_type": "idea_generation",
-  "input": {
-    "topic_text": "scientific idea generation with retrieval-augmented large language models"
-  },
-  "params": {
-    "idea_count": 5
-  }
-}

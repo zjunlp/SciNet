@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from ..core.common import extract_json_object, normalize_whitespace
-from ..llm.client import load_llm_client
+from ..llm.client import build_llm_client
 
 
 LLM_SYSTEM_PROMPT = (
@@ -101,12 +101,11 @@ class PaperBatchScorer:
     def __init__(self, *, env_path: Path, params: dict[str, Any]) -> None:
         self.env_path = env_path
         self.params = params
-        self.client, self.model_name = load_llm_client(env_path, params)
+        self.client = build_llm_client(env_path, params)
 
     def score_batch(self, *, plan: dict[str, Any], batch_papers: list[dict[str, Any]]) -> list[dict[str, Any]]:
         prompt = build_relevance_prompt(plan, batch_papers)
-        response = self.client.chat.completions.create(
-            model=self.model_name,
+        content = self.client.chat_text(
             messages=[
                 {"role": "system", "content": LLM_SYSTEM_PROMPT},
                 {"role": "user", "content": prompt},
@@ -115,7 +114,6 @@ class PaperBatchScorer:
             response_format={"type": "json_object"},
             max_tokens=int(self.params.get("rerank_max_tokens") or 900),
         )
-        content = response.choices[0].message.content or "{}"
         parsed = extract_json_object(content)
         return parse_batch_scores(parsed, expected_size=len(batch_papers), fallback_content=content)
 
