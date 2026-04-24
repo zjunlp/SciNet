@@ -141,6 +141,8 @@ OA_API_KEY=
 OPENALEX_MAILTO=
 ```
 
+You can get an OpenAlex API key from https://openalex.org/settings/api-key.
+
 Required variables:
 
 | Variable | Required For | Notes |
