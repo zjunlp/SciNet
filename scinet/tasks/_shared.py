@@ -161,6 +161,31 @@ def _default_query_model(env_path: Path) -> str | None:
     return resolve_llm_settings(env_path, {}, require_api_key=False).model
 
 
+def _apply_grounding_model_env_defaults(params: dict[str, Any], env_path: Path) -> None:
+    env_values = load_env_values(env_path)
+    if not normalize_whitespace(params.get("embedding_model")) and not normalize_whitespace(params.get("embedding_model_path")):
+        embedding_model = get_env_value(
+            env_values,
+            "SCINET_EMBEDDING_MODEL_PATH",
+            "SCINET_EMBEDDING_MODEL",
+            "GROUNDING_EMBEDDING_MODEL_PATH",
+            "GROUNDING_EMBEDDING_MODEL",
+        )
+        if embedding_model:
+            params["embedding_model_path"] = embedding_model
+
+    if not normalize_whitespace(params.get("reranker_model")) and not normalize_whitespace(params.get("reranker_model_path")):
+        reranker_model = get_env_value(
+            env_values,
+            "SCINET_RERANKER_MODEL_PATH",
+            "SCINET_RERANKER_MODEL",
+            "GROUNDING_RERANKER_MODEL_PATH",
+            "GROUNDING_RERANKER_MODEL",
+        )
+        if reranker_model:
+            params["reranker_model_path"] = reranker_model
+
+
 def _run_grounding(
     *,
     input_payload: dict[str, Any],
@@ -554,6 +579,7 @@ def _build_supporting_papers(authors: list[dict[str, Any]]) -> list[dict[str, An
 
 def execute_grounded_review(request: SciNetRequest, run_dir: Path, client: SciNetApiClient) -> dict[str, Any]:
     params = merge_task_params(request.task_type, request.params)
+    _apply_grounding_model_env_defaults(params, request.env_path)
     artifact_root = ensure_dir(run_dir / "artifacts")
     search_artifact_dir = ensure_dir(artifact_root / "search")
     plan = _build_search_plan(

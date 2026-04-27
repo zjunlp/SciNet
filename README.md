@@ -119,12 +119,11 @@ pip install -r requirements.txt
 cp .env.example .env
 ```
 
-Fill in the required variables:
+We currently provide a public `SciNet API` endpoint for community use. Fill in the required variables:
 
 ```env
-SCINET_API_BASE_URL=https://your-scinet-api.example.com
-SCINET_API_KEY=replace-me
-SCINET_API_TIMEOUT=120
+SCINET_API_BASE_URL=http://scinet.openkg.cn
+SCINET_API_KEY=scinet-public-key
 
 LLM_PROVIDER=openai_compatible
 LLM_API_KEY=replace-me
@@ -248,6 +247,12 @@ python3 run_scinet.py \
 ```
 
 For `Idea Grounding and Evaluation`, model-related overrides can be supplied through `--params-file` or `--params-json`.
+You can also set local model paths once in `.env`:
+
+```bash
+SCINET_EMBEDDING_MODEL_PATH=/absolute/path/to/BAAI--bge-large-en-v1.5
+SCINET_RERANKER_MODEL_PATH=/absolute/path/to/BAAI--bge-reranker-large
+```
 
 `grounded_review` also accepts `query_provider`, `query_model`, and `query_api_url` overrides in `params`.
 If omitted, it resolves them from `LLM_PROVIDER`, `LLM_MODEL`, and `LLM_BASE_URL`.

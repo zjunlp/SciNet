@@ -102,6 +102,7 @@ class PaperBatchScorer:
         self.env_path = env_path
         self.params = params
         self.client = build_llm_client(env_path, params)
+        self.model_name = normalize_whitespace(getattr(self.client.settings, "model", "")) or "unknown"
 
     def score_batch(self, *, plan: dict[str, Any], batch_papers: list[dict[str, Any]]) -> list[dict[str, Any]]:
         prompt = build_relevance_prompt(plan, batch_papers)

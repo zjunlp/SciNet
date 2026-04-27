@@ -8,7 +8,15 @@ import traceback
 from pathlib import Path
 from typing import Any
 
-from .core.common import DEFAULT_ENV_PATH, DEFAULT_RUN_ROOT, normalize_whitespace, resolve_run_dir, write_json, write_text
+from .core.common import (
+    DEFAULT_ENV_PATH,
+    DEFAULT_RUN_ROOT,
+    normalize_whitespace,
+    read_json,
+    resolve_run_dir,
+    write_json,
+    write_text,
+)
 from .core.schemas import (
     SUPPORTED_TASK_TYPES,
     TASK_AUTHOR_PROFILE,
@@ -43,6 +51,26 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--author-name", default=None, help=f"Author name input for {TASK_AUTHOR_PROFILE}.")
     parser.add_argument("--params-file", default=None, help="Path to a JSON file with task params overrides.")
     parser.add_argument("--params-json", default=None, help="Inline JSON object for task params overrides.")
+    parser.add_argument("--api-timeout-default", type=float, default=None, help="Default SciNet API read timeout in seconds.")
+    parser.add_argument("--api-timeout-search", type=float, default=None, help="Read timeout in seconds for /v1/search.")
+    parser.add_argument(
+        "--api-timeout-authors-related",
+        type=float,
+        default=None,
+        help="Read timeout in seconds for /v1/authors/related.",
+    )
+    parser.add_argument(
+        "--api-timeout-authors-papers",
+        type=float,
+        default=None,
+        help="Read timeout in seconds for /v1/authors/papers.",
+    )
+    parser.add_argument(
+        "--api-timeout-support-papers",
+        type=float,
+        default=None,
+        help="Read timeout in seconds for /v1/authors/support-papers.",
+    )
     parser.add_argument("--output-root", default=str(DEFAULT_RUN_ROOT), help="Root folder for SciNet runs.")
     parser.add_argument("--run-id", default=None, help="Optional run id.")
     parser.add_argument("--env", default=str(DEFAULT_ENV_PATH), help="Path to the SciNet .env file.")
@@ -94,6 +122,17 @@ def _build_request_from_args(args: argparse.Namespace) -> SciNetRequest:
     params = {}
     params.update(_load_optional_json(args.params_file))
     params.update(_parse_inline_json(args.params_json))
+    cli_timeout_params = {
+        "api_timeout_default": "scinet_api_timeout_default",
+        "api_timeout_search": "scinet_api_timeout_search",
+        "api_timeout_authors_related": "scinet_api_timeout_authors_related",
+        "api_timeout_authors_papers": "scinet_api_timeout_authors_papers",
+        "api_timeout_support_papers": "scinet_api_timeout_support_papers",
+    }
+    for arg_name, param_name in cli_timeout_params.items():
+        value = getattr(args, arg_name, None)
+        if value is not None:
+            params[param_name] = value
     return SciNetRequest(
         task_type=args.task_type,
         input_payload=input_payload,

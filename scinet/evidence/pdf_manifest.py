@@ -1009,11 +1009,13 @@ class PdfXmlPipeline:
             urllib.parse.urljoin(self.config.grobid_base_url, "/api/processFulltextDocument"),
             pdf_path,
             fulltext_fields,
+            timeout_s=self.config.timeout,
         )
         refs_xml = post_pdf(
             urllib.parse.urljoin(self.config.grobid_base_url, "/api/processReferences"),
             pdf_path,
             refs_fields,
+            timeout_s=self.config.timeout,
         )
         document = parse_tei_document(fulltext_xml, preserve_bibr_refs=self.config.preserve_bibr_refs)
         reference_document = parse_tei_document(refs_xml)
