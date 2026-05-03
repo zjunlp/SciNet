@@ -1,0 +1,13 @@
+.env
+.env.local
+token.env
+*.sqlite3
+.cache/
+runs/
+__pycache__/
+*.pyc
+dist/
+build/
+*.egg-info/
+.venv/
+.DS_Store

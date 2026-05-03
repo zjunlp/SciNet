@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "scinet-client"
+version = "0.1.0"
+description = "SciNet client and CLI for scientific knowledge-graph retrieval."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [
+  { name = "SciNet Team" }
+]
+keywords = [
+  "scientific discovery",
+  "knowledge graph",
+  "paper retrieval",
+  "research agent",
+  "literature review",
+  "AI for science"
+]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence"
+]
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/zjunlp/SciNet"
+Repository = "https://github.com/zjunlp/SciNet"
+API = "http://scinet.openkg.cn"
+Registration = "http://scinet.openkg.cn/register"
+
+[project.scripts]
+scinet = "scinet.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
