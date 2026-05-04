@@ -279,6 +279,299 @@ def _format_elapsed(value: Any) -> str:
         return str(value)
 
 
+
+# ============================================================
+# Downstream-channel specific frontend cards
+# ============================================================
+
+DOWNSTREAM_FRONTEND_COMMANDS = {
+    "literature-review",
+    "idea-grounding",
+    "idea-evaluate",
+    "idea-generate",
+    "trend-report",
+    "researcher-review",
+}
+
+_FRONTEND_STOPWORDS = {
+    "about", "after", "again", "against", "agent", "agents", "also", "among", "based",
+    "being", "between", "could", "from", "have", "into", "large", "model", "models",
+    "paper", "papers", "research", "study", "system", "systems", "their", "there",
+    "these", "this", "through", "using", "with", "world", "would"
+}
+
+
+def _frontend_compact(value: Any, limit: int = 80) -> str:
+    text = "" if value is None else str(value).replace("\n", " ").strip()
+    return text if len(text) <= limit else text[: limit - 3] + "..."
+
+
+def _frontend_score(value: Any) -> str:
+    try:
+        return f"{float(value):.4f}"
+    except Exception:
+        return "-" if value in (None, "") else str(value)
+
+
+def _safe_read_text(path: str | None, max_chars: int = 20000) -> str:
+    if not path:
+        return ""
+    try:
+        p = Path(path)
+        if not p.exists():
+            return ""
+        return p.read_text(encoding="utf-8", errors="replace")[:max_chars]
+    except Exception:
+        return ""
+
+
+def _strip_md(value: str) -> str:
+    text = re.sub(r"`([^`]+)`", r"\1", value)
+    text = re.sub(r"\*\*([^*]+)\*\*", r"\1", text)
+    text = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", text)
+    text = text.replace("|", " ").strip()
+    return _frontend_compact(text, 180)
+
+
+def _section_excerpt(report_text: str, heading_keywords: list[str], *, max_lines: int = 5) -> list[str]:
+    if not report_text:
+        return []
+
+    lines = report_text.splitlines()
+    start = None
+    for idx, line in enumerate(lines):
+        if line.lstrip().startswith("##") and any(key.lower() in line.lower() for key in heading_keywords):
+            start = idx + 1
+            break
+
+    if start is None:
+        return []
+
+    result: list[str] = []
+    for line in lines[start:]:
+        raw = line.strip()
+        if raw.startswith("## "):
+            break
+        if not raw or raw.startswith("|") or raw.startswith("---"):
+            continue
+        if raw.startswith("- "):
+            raw = raw[2:].strip()
+        elif re.match(r"^\d+\.\s+", raw):
+            raw = re.sub(r"^\d+\.\s+", "", raw)
+        elif len(raw) > 220:
+            continue
+
+        cleaned = _strip_md(raw)
+        if cleaned and cleaned not in result:
+            result.append(cleaned)
+        if len(result) >= max_lines:
+            break
+
+    return result
+
+
+def _topic_terms_from_papers(papers: list[dict[str, Any]], *, max_terms: int = 8) -> list[str]:
+    text = " ".join(str(p.get("title", "")) + " " + str(p.get("abstract", "")) for p in papers[:10])
+    tokens = re.findall(r"[A-Za-z][A-Za-z0-9\-]{2,}", text.lower())
+    counts: dict[str, int] = {}
+    for t in tokens:
+        if t in _FRONTEND_STOPWORDS or len(t) < 4:
+            continue
+        counts[t] = counts.get(t, 0) + 1
+    return [k for k, _ in sorted(counts.items(), key=lambda kv: (-kv[1], kv[0]))[:max_terms]]
+
+
+def _timeline_rows_from_papers(papers: list[dict[str, Any]], *, max_rows: int = 6) -> list[list[Any]]:
+    buckets: dict[str, dict[str, Any]] = {}
+    for p in papers:
+        year = str(p.get("year") or "-")
+        if not year or year == "-":
+            continue
+        cur = buckets.setdefault(year, {"count": 0, "titles": []})
+        cur["count"] += 1
+        if len(cur["titles"]) < 2:
+            cur["titles"].append(_frontend_compact(p.get("title", ""), 70))
+
+    rows = []
+    for year in sorted(buckets.keys()):
+        rows.append([year, buckets[year]["count"], "; ".join(buckets[year]["titles"])])
+    return rows[:max_rows]
+
+
+def _top_paper_rows(papers: list[dict[str, Any]], *, max_rows: int = 4) -> list[list[Any]]:
+    rows = []
+    for p in papers[:max_rows]:
+        rows.append([
+            p.get("rank", ""),
+            p.get("title", ""),
+            p.get("year", "-"),
+            _frontend_score(p.get("score")),
+            p.get("citations", "-"),
+        ])
+    return rows
+
+
+def build_downstream_channel_view(
+    *,
+    command: str,
+    payload: dict[str, Any],
+    report_path: str | None,
+    max_items: int,
+) -> dict[str, Any] | None:
+    if command not in DOWNSTREAM_FRONTEND_COMMANDS:
+        return None
+
+    papers = payload.get("papers") or []
+    report_text = _safe_read_text(report_path)
+    topics = _topic_terms_from_papers(papers, max_terms=8)
+    evidence_rows = _top_paper_rows(papers, max_rows=min(4, max_items))
+
+    if command == "literature-review":
+        bullets = _section_excerpt(report_text, ["主题脉络", "keyword", "写作建议", "review"], max_lines=4) or [
+            "Use high-score papers to build the main technical storyline.",
+            "Group representative works by task definition, method family, evaluation protocol, and limitations.",
+            "Read the full report for timeline and representative-paper interpretation.",
+        ]
+        return {
+            "title": "🧭 Literature Review Snapshot",
+            "subtitle": "Core papers are reorganized into review-oriented reading and writing cues.",
+            "sections": [
+                {"title": "Review Focus", "items": bullets},
+                {"title": "Representative Papers", "headers": ["#", "Title", "Year", "Score", "Cites"], "rows": evidence_rows},
+                {"title": "Suggested Outline", "items": [
+                    "Background and task definition",
+                    "Method evolution and representative systems",
+                    "Evaluation protocols and benchmarks",
+                    "Limitations and future directions",
+                ]},
+            ],
+        }
+
+    if command == "idea-grounding":
+        bullets = _section_excerpt(report_text, ["差异化", "相似", "grounding", "检查"], max_lines=4) or [
+            "Check whether top papers solve the same problem or only share terminology.",
+            "Compare motivation, method design, environment, and evaluation setting.",
+            "Use report.md to record overlap points and differentiation opportunities.",
+        ]
+        return {
+            "title": "🧭 Idea Grounding Card",
+            "subtitle": "Use retrieved evidence to locate similar work and differentiation space.",
+            "sections": [
+                {"title": "Closest Evidence", "headers": ["#", "Title", "Year", "Score", "Cites"], "rows": evidence_rows},
+                {"title": "Grounding Checklist", "items": bullets},
+                {"title": "Differentiation Questions", "items": [
+                    "What assumption does your idea change?",
+                    "Which setting, data, tool, or evaluation differs from prior work?",
+                    "Can the contribution be stated without merely renaming an existing method?",
+                ]},
+            ],
+        }
+
+    if command == "idea-evaluate":
+        bullets = _section_excerpt(report_text, ["新颖", "可行", "可靠", "novelty", "feasibility", "soundness"], max_lines=4) or [
+            "Novelty: compare against the most similar retrieved papers.",
+            "Feasibility: check whether related methods, data, and evaluation protocols already exist.",
+            "Soundness: identify whether assumptions can be validated with KG-backed literature.",
+        ]
+        return {
+            "title": "🧪 Idea Evaluation Card",
+            "subtitle": "Evidence is organized around novelty, feasibility, and soundness.",
+            "sections": [
+                {"title": "Evidence Papers", "headers": ["#", "Title", "Year", "Score", "Cites"], "rows": evidence_rows},
+                {"title": "Evaluation Signals", "items": bullets},
+                {"title": "Manual Review Rubric", "items": [
+                    "Novelty: is there a clear gap beyond the closest papers?",
+                    "Feasibility: are datasets, baselines, tools, or tasks available?",
+                    "Soundness: can claims be verified through controlled experiments?",
+                    "Risk: is the idea too broad, too incremental, or poorly scoped?",
+                ]},
+            ],
+        }
+
+    if command == "idea-generate":
+        seed_terms = topics[:6] or ["retrieval", "evaluation", "agents", "knowledge graph"]
+        seed_items = []
+        for i in range(0, min(len(seed_terms), 6), 2):
+            pair = seed_terms[i:i + 2]
+            if len(pair) == 2:
+                seed_items.append(f"Combine `{pair[0]}` with `{pair[1]}` and check whether the intersection is under-explored.")
+        if not seed_items:
+            seed_items = ["Increase `--bias-exploration` or add more high-quality keyword anchors to discover broader idea seeds."]
+        return {
+            "title": "💡 Idea Generation Seeds",
+            "subtitle": "Exploratory KG retrieval is summarized as candidate research directions.",
+            "sections": [
+                {"title": "Topic Ingredients", "items": [f"`{t}`" for t in seed_terms[:8]]},
+                {"title": "Candidate Combinations", "items": seed_items},
+                {"title": "Seed Evidence", "headers": ["#", "Title", "Year", "Score", "Cites"], "rows": evidence_rows},
+            ],
+        }
+
+    if command == "trend-report":
+        timeline_rows = _timeline_rows_from_papers(papers, max_rows=8)
+        bullets = _section_excerpt(report_text, ["趋势", "时间线", "trend", "timeline"], max_lines=4) or [
+            "Use earlier high-citation papers as stable foundations.",
+            "Use recent lower-citation papers as possible emerging signals.",
+            "Compare year buckets to identify phase shifts in tasks and methods.",
+        ]
+        return {
+            "title": "📈 Trend Timeline",
+            "subtitle": "Results are reorganized by time and impact for trend analysis.",
+            "sections": [
+                {"title": "Year Buckets", "headers": ["Year", "Count", "Representative Titles"], "rows": timeline_rows},
+                {"title": "Trend Reading Guide", "items": bullets},
+                {"title": "High-value Papers", "headers": ["#", "Title", "Year", "Score", "Cites"], "rows": evidence_rows},
+            ],
+        }
+
+    if command == "researcher-review":
+        bullets = _section_excerpt(report_text, ["研究轨迹", "代表", "trajectory", "background"], max_lines=4) or [
+            "Use representative works to infer the research trajectory.",
+            "Group papers by topic terms, publication years, and citation strength.",
+            "Read report.md to prepare a researcher background summary.",
+        ]
+        return {
+            "title": "👤 Researcher Profile Snapshot",
+            "subtitle": "Author-related papers are reorganized into trajectory and representative-work cues.",
+            "sections": [
+                {"title": "Topic Terms", "items": [f"`{t}`" for t in topics[:8]] or ["No stable topic terms extracted."]},
+                {"title": "Representative Works", "headers": ["#", "Title", "Year", "Score", "Cites"], "rows": evidence_rows},
+                {"title": "Profile Writing Hints", "items": bullets},
+            ],
+        }
+
+    return None
+
+
+def _render_channel_view(channel_view: dict[str, Any]) -> list[str]:
+    lines: list[str] = []
+    title = channel_view.get("title")
+    subtitle = channel_view.get("subtitle")
+
+    if title:
+        lines.append(color(str(title), ANSI_BOLD + ANSI_MAGENTA))
+    if subtitle:
+        lines.append(str(subtitle))
+
+    for section in channel_view.get("sections", []) or []:
+        section_title = section.get("title")
+        if section_title:
+            lines.append("")
+            lines.append(color(str(section_title), ANSI_BOLD + ANSI_CYAN))
+
+        if section.get("rows"):
+            headers = section.get("headers") or []
+            rows = section.get("rows") or []
+            if headers and rows:
+                lines.append(_table(headers, rows))
+
+        items = section.get("items") or []
+        for item in items:
+            lines.append(f"  • {item}")
+
+    return lines
+
+
 def render_user_output(payload: dict[str, Any]) -> str:
     """Render concise user-facing output as colored text tables."""
     ok = bool(payload.get("ok"))
@@ -325,11 +618,17 @@ def render_user_output(payload: dict[str, Any]) -> str:
     if elapsed is not None:
         lines.append(f"⏱️  Elapsed: {color(_format_elapsed(elapsed), ANSI_CYAN)}")
 
+    channel_view = payload.get("channel_view")
+    has_channel_view = isinstance(channel_view, dict) and bool(channel_view)
+    if has_channel_view:
+        lines.append("")
+        lines.extend(_render_channel_view(channel_view))
+
     papers = payload.get("papers") or []
     authors = payload.get("authors") or []
     support = payload.get("supporting_papers") or []
 
-    if papers:
+    if papers and not has_channel_view:
         lines.append("")
         lines.append(color("📚 Papers", ANSI_BOLD + ANSI_MAGENTA))
         rows = []
@@ -375,7 +674,7 @@ def render_user_output(payload: dict[str, Any]) -> str:
         lines.append("")
         lines.append(str(payload["message"]))
 
-    if payload.get("channel_hint"):
+    if payload.get("channel_hint") and not has_channel_view:
         lines.append("")
         lines.append(color("✨ Channel Hint", ANSI_BOLD + ANSI_CYAN))
         lines.append(str(payload["channel_hint"]))
@@ -384,6 +683,7 @@ def render_user_output(payload: dict[str, Any]) -> str:
         lines.append("")
         lines.append(f"📝 Full Markdown report saved to: {color(payload['report'], ANSI_GREEN)}")
         lines.append(color("   Open it with less or VS Code to inspect full evidence and summaries.", ANSI_DIM))
+
 
     return "\n".join(lines)
 
@@ -3884,6 +4184,14 @@ def _run_plan_search_channel(
     )
     if response and response.get("ok") and command in DOWNSTREAM_CHANNEL_HINTS:
         payload["channel_hint"] = DOWNSTREAM_CHANNEL_HINTS[command]
+        channel_view = build_downstream_channel_view(
+            command=command,
+            payload=payload,
+            report_path=artifacts.get("report_md"),
+            max_items=args.report_max_items,
+        )
+        if channel_view:
+            payload["channel_view"] = channel_view
 
     print(render_user_output(payload))
     return 0 if response.get("ok") else 1
@@ -3969,6 +4277,14 @@ def _run_author_papers_channel(*, args: argparse.Namespace, command: str, prefix
     )
     if response and response.get("ok") and command in DOWNSTREAM_CHANNEL_HINTS:
         payload["channel_hint"] = DOWNSTREAM_CHANNEL_HINTS[command]
+        channel_view = build_downstream_channel_view(
+            command=command,
+            payload=payload,
+            report_path=artifacts.get("report_md"),
+            max_items=args.report_max_items,
+        )
+        if channel_view:
+            payload["channel_view"] = channel_view
 
     print(render_user_output(payload))
     return 0 if response.get("ok") else 1
@@ -4161,6 +4477,14 @@ def _run_researcher_review_full_kg(*, args: argparse.Namespace, default_limit: i
     )
     if response and response.get("ok") and command in DOWNSTREAM_CHANNEL_HINTS:
         payload["channel_hint"] = DOWNSTREAM_CHANNEL_HINTS[command]
+        channel_view = build_downstream_channel_view(
+            command=command,
+            payload=payload,
+            report_path=artifacts.get("report_md"),
+            max_items=args.report_max_items,
+        )
+        if channel_view:
+            payload["channel_view"] = channel_view
 
     print(render_user_output(payload))
     return 0 if response.get("ok") else 1

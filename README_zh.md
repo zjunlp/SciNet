@@ -1,102 +1,133 @@
 <div align="center">
-  <h1>SciNet: 闈㈠悜鑷姩鍖栫瀛︾爺绌剁殑澶ц妯＄煡璇嗗浘璋?/h1>
+  <h1>SciNet: 面向自动化科学研究的大规模知识图谱</h1>
 </div>
 
 <p align="center">
-  涓€涓彲閫氳繃 pip 瀹夎鐨?SciNet 瀹㈡埛绔笌鍛戒护琛屽伐鍏凤紝鐢ㄤ簬璋冪敤鎵樼 SciNet API 瀹屾垚鏂囩尞椹卞姩鐨勭鐮斿伐浣滄祦銆?</p>
+  🌐 <a href="README.md">English</a> · <strong>简体中文</strong>
+</p>
 
 <p align="center">
-  <a href="https://arxiv.org/abs/2602.14367">馃搫 arXiv</a>
-  路
-  <a href="http://scinet.openkg.cn/register">馃攽 鑾峰彇 API Token</a>
-  路
-  <a href="http://scinet.openkg.cn/healthz">馃┖ API 鍋ュ悍妫€鏌?/a>
+  <a href="docs/api/SCINET_API_DOC_zh.html">📚 API 文档站</a>
+</p>
+
+<p align="center">
+  一个可通过 pip 安装的 SciNet 客户端与命令行工具，用于调用托管 SciNet API 完成文献驱动的科研工作流。
+</p>
+
+<p align="center">
+  <a href="https://arxiv.org/abs/2602.14367">📄 arXiv</a>
+  ·
+  <a href="http://scinet.openkg.cn/register">🔑 获取 API Token</a>
+  ·
+  <a href="http://scinet.openkg.cn/healthz">🩺 API 健康检查</a>
 </p>
 
 ---
 
-## 馃搼 鐩綍
+## ✨ 项目概览
 
-- [鉁?椤圭洰姒傝](#-椤圭洰姒傝)
-- [馃殌 蹇€熷紑濮媇(#-蹇€熷紑濮?
-- [馃攽 API Token](#-api-token)
-- [馃 SciNet 鑳藉仛浠€涔圿(#-scinet-鑳藉仛浠€涔?
-- [馃З 鏀寔浠诲姟](#-鏀寔浠诲姟)
-- [馃洜锔?CLI 浼樺厛宸ヤ綔娴乚(#锔?cli-浼樺厛宸ヤ綔娴?
-- [馃О 鍙紪杈?Skills](#-鍙紪杈?skills)
-- [馃悕 Python SDK](#-python-sdk)
-- [鈿欙笍 閰嶇疆璇存槑](#锔?閰嶇疆璇存槑)
-- [馃И 绀轰緥鍛戒护](#-绀轰緥鍛戒护)
-- [馃摝 杈撳嚭涓庤繍琛屼骇鐗(#-杈撳嚭涓庤繍琛屼骇鐗?
-- [馃洜锔?PDF 宸ヤ綔娴佷腑鐨?GROBID](#锔?pdf-宸ヤ綔娴佷腑鐨?grobid)
-- [馃搨 浠撳簱缁撴瀯](#-浠撳簱缁撴瀯)
-- [馃Н 甯歌闂](#-甯歌闂)
-- [馃椇锔?Roadmap](#锔?roadmap)
-- [鉁嶏笍 Citation](#锔?citation)
-- [馃搫 License](#-license)
+你可以把 SciNet 理解成一张面向科研的“知识地图”。输入一个研究主题、一个 idea、一位作者，或一条论文线索，SciNet 会帮你检索相关文献、沿着知识图谱寻找证据，并把结果整理成易读报告和可复现的 JSON 产物。
+
+这张图谱不只是论文列表。它把论文、作者、机构、期刊会议、关键词、引用关系，以及从 Domain 到 Topic 的四级学科体系连接起来。因此，SciNet 的检索不只是在匹配关键词，也可以顺着研究领域、概念、人物和论文之间的关系继续探索。
+
+本仓库提供的是面向用户的轻量级 **SciNet 客户端包**。新用户只需要通过 `pip` 安装、注册 API Token，就可以在本地运行文献检索和科研工作流；无需自己部署 Neo4j、维护图数据库，也不用关心后端基础设施。
+
+<p align="center">
+  <img src="imgs/field_distribution_pie.png" alt="SciNet 各学科领域分布" width="92%">
+</p>
+
+<p align="center">
+  <em>SciNet 覆盖医学、社会科学、工程、计算机科学、材料科学、数学等多个学科领域，适合跨学科科研探索。</em>
+</p>
+
+<p align="center">
+  <img src="imgs/schema.png" alt="SciNet 知识图谱结构" width="92%">
+</p>
+
+<p align="center">
+  <em>图谱把论文与作者、机构、来源、关键词、引用、相关工作，以及 Domain-Field-Subfield-Topic 层级连接起来。</em>
+</p>
+
+通过这个客户端，你可以：
+
+- 使用关键词、语义、标题、参考文献和图检索能力查找论文；
+- 运行文献综述、idea grounding、idea evaluation、idea generation、趋势分析、相关作者检索和研究者画像等科研工作流；
+- 保存 `request.json`、`response.json`、`summary.txt`、`report.md` 等可复现实验产物；
+- 通过可编辑 CLI **skills** 定制自己的下游科研流程。
 
 ---
 
-## 鉁?椤圭洰姒傝
+## 📑 目录
 
-SciNet 鏄竴涓ぇ瑙勬ā銆佸瀛︾銆佸紓鏋勫鏈祫婧愮煡璇嗗浘璋憋紝鏃ㄥ湪鏋勫缓鍏ㄦ櫙寮忕瀛︽紨鍖栫綉缁溿€傚畠鏁村悎璁烘枃銆佷綔鑰呫€佸叧閿瘝銆佸紩鐢ㄣ€佸绉戠瓑瀛︽湳瀹炰綋锛屼负绉戝鍙戠幇 Agent 鍜岀鐮旇緟鍔╃郴缁熸彁渚涚粨鏋勫寲鐨勭煡璇嗗浘璋辨绱㈣兘鍔涖€?
-鏈粨搴撴彁渚涢潰鍚戠敤鎴风殑杞婚噺绾?**SciNet 瀹㈡埛绔寘**銆傜敤鎴峰彲浠ラ€氳繃 pip 瀹夎锛屽湪鏈湴璋冪敤鎵樼鐨?SciNet / KG2API 鍚庣锛屾棤闇€杩炴帴 Neo4j銆佸浘鏁版嵁搴撴垨浠讳綍鍚庣鍩虹璁炬柦銆?
-瀹㈡埛绔礋璐ｏ細
+- [✨ 项目概览](#-项目概览)
+- [🚀 快速开始](#-快速开始)
+- [🔑 API Token](#-api-token)
+- [🧠 SciNet 能做什么](#-scinet-能做什么)
+- [🧩 支持任务](#-支持任务)
+- [🛠️ CLI 优先工作流](#-cli-优先工作流)
+- [🧰 可编辑 Skills](#-可编辑-skills)
+- [🐍 Python SDK](#-python-sdk)
+- [⚙️ 配置说明](#-配置说明)
+- [🧪 示例命令](#-示例命令)
+- [📦 输出与运行产物](#-输出与运行产物)
+- [🛠️ PDF 工作流中的 GROBID](#-pdf-工作流中的-grobid)
+- [📂 仓库结构](#-仓库结构)
+- [🧯 常见问题](#-常见问题)
+- [🗺️ Roadmap](#-roadmap)
+- [✍️ Citation](#-citation)
+- [📄 License](#-license)
 
-- 鏋勯€犵粨鏋勫寲妫€绱㈣姹傦紱
-- 璋冪敤鎵樼 SciNet API锛?- 杈撳嚭绠€娲佺粓绔粨鏋滐紱
-- 淇濆瓨鍙鐜板疄楠屼骇鐗╋紝濡?`request.json`銆乣response.json`銆乣report.md`锛?- 灏嗕笅娓哥鐮斿伐浣滄祦灏佽涓哄彲缂栬緫 CLI **skills**銆?
 ---
 
-## 馃殌 蹇€熷紑濮?
-### 1. 瀹夎
+## 🚀 快速开始
+### 1. 安装
 
-浠?GitHub 鐩存帴瀹夎锛?
+从 GitHub 直接安装：
 ```bash
 pip install "git+https://github.com/zjunlp/SciNet.git#subdirectory=scinet"
 ```
 
-濡傛灉鍙笇鏈涢殧绂诲畨瑁?CLI锛?
+如果只希望隔离安装 CLI：
 ```bash
 pipx install "git+https://github.com/zjunlp/SciNet.git#subdirectory=scinet"
 ```
 
-瀹夎鍚庢鏌ワ細
+安装后检查：
 
 ```bash
 scinet -h
 ```
 
-### 2. 娉ㄥ唽 API Token
+### 2. 注册 API Token
 
-璁块棶锛?
+访问：
 ```text
 http://scinet.openkg.cn/register
 ```
 
-瀹屾垚閭楠岃瘉鐮佹敞鍐岋紝骞跺鍒朵釜浜?Token銆?
-### 3. 閰嶇疆
+完成邮箱验证码注册，并复制个人 Token。
+### 3. 配置
 
-Linux / macOS锛?
+Linux / macOS：
 ```bash
 export SCINET_API_BASE_URL="http://scinet.openkg.cn"
 export SCINET_API_KEY="your-personal-scinet-token"
 ```
 
-Windows CMD锛?
+Windows CMD：
 ```bat
 set SCINET_API_BASE_URL=http://scinet.openkg.cn
 set SCINET_API_KEY=your-personal-scinet-token
 ```
 
-### 4. 娴嬭瘯
+### 4. 测试
 
 ```bash
 scinet health
 scinet config
 ```
 
-### 5. 杩愯璁烘枃妫€绱?
+### 5. 运行论文检索
 ```bash
 scinet search-papers \
   --query "open world agent" \
@@ -106,26 +137,34 @@ scinet search-papers \
 
 ---
 
-## 馃攽 API Token
+## 🔑 API Token
 
-SciNet 瀵瑰叕寮€鐢ㄦ埛浣跨敤涓汉 API Token銆?
-### 娴忚鍣ㄦ敞鍐?
-璁块棶锛?
+SciNet 对公开用户使用个人 API Token。
+
+### 浏览器注册
+
+访问：
 ```text
 http://scinet.openkg.cn/register
 ```
 
-娴佺▼锛?
-1. 杈撳叆濮撳悕銆侀偖绠便€佹満鏋勫拰浣跨敤鐩殑锛?2. 鐐瑰嚮 **Send code**锛?3. 鏌ユ敹閭楠岃瘉鐮侊紱
-4. 杈撳叆楠岃瘉鐮佸苟鍒涘缓 Token锛?5. 澶嶅埗杩斿洖鐨?`scinet_xxx` Token銆?
-Token 鍙樉绀轰竴娆★紝璇峰Ε鍠勪繚瀛樸€?
-### 鏌ヨ Token 鐘舵€?
+流程：
+
+1. 输入姓名、邮箱、机构和使用目的；
+2. 点击 **Send code**；
+3. 查收邮箱验证码；
+4. 输入验证码并创建 Token；
+5. 复制返回的 `scinet_xxx` Token。
+
+Token 只显示一次，请妥善保存。
+
+### 查询 Token 状态
 ```bash
 curl -H "Authorization: Bearer $SCINET_API_KEY" \
   http://scinet.openkg.cn/v1/auth/token/status
 ```
 
-### 鏌ヨ鐢ㄩ噺
+### 查询用量
 
 ```bash
 curl -H "Authorization: Bearer $SCINET_API_KEY" \
@@ -134,31 +173,40 @@ curl -H "Authorization: Bearer $SCINET_API_KEY" \
 
 ---
 
-## 馃 SciNet 鑳藉仛浠€涔?
-SciNet 闈㈠悜绉戠爺浠诲姟锛岃€屼笉鍙槸鏅€氬叧閿瘝妫€绱€?
-1. **Search + KG Retrieval**锛氬熀浜庡叧閿瘝銆佽涔夈€佹爣棰橀敋鐐广€佸弬鑰冩枃鐚拰鍥句紶鎾绱㈢浉鍏宠鏂囥€?2. **绉戠爺宸ヤ綔娴佽嚜鍔ㄥ寲**锛氭敮鎸佹枃鐚患杩般€乮dea grounding銆乮dea evaluation銆乮dea generation銆佽秼鍔垮垎鏋愩€佺浉鍏充綔鑰呮绱㈠拰鐮旂┒鑰呯敾鍍忋€?3. **Agent 鍙嬪ソ鐨勮緭鍑?*锛氭瘡娆¤繍琛岄兘浼氫繚鐣欐満鍣ㄥ彲璇?JSON 浜х墿鍜岄潰鍚戠敤鎴风殑 Markdown 鎶ュ憡銆?4. **鍙紪杈?Skills**锛氬父鐢ㄤ笅娓镐换鍔″彲浠ュ皝瑁呬负 JSON skill锛岀敤鎴峰彲鏌ョ湅銆佸鍒躲€佷慨鏀瑰苟閫氳繃 CLI 涓€閿繍琛屻€?
+## 🧠 SciNet 能做什么
+
+SciNet 面向科研任务，而不只是普通关键词检索。
+
+1. **Search + KG Retrieval**：基于关键词、语义、标题锚点、参考文献和图传播检索相关论文。
+2. **科研工作流自动化**：支持文献综述、idea grounding、idea evaluation、idea generation、趋势分析、相关作者检索和研究者画像。
+3. **Agent 友好的输出**：每次运行都会保留机器可读 JSON 产物和面向用户的 Markdown 报告。
+4. **可编辑 Skills**：常用下游任务可以封装为 JSON skill，用户可查看、复制、修改并通过 CLI 一键运行。
+
 ---
 
-## 馃З 鏀寔浠诲姟
+## 🧩 支持任务
 
-| 鍛戒护 | 鍦烘櫙 | 涓昏杈撳嚭 |
+| 命令 | 场景 | 主要输出 |
 |---|---|---|
-| `scinet search-papers` | 璁烘枃妫€绱?| 鐩稿叧璁烘枃鍜?Markdown 鎶ュ憡 |
-| `scinet related-authors` | 鐩稿叧浣滆€呭彂鐜?| 鍊欓€変綔鑰呬笌鍒嗘暟 |
-| `scinet author-papers` | 浣滆€呰鏂囨煡璇?| 鎸囧畾浣滆€呰鏂?|
-| `scinet support-papers` | 鏀拺璁烘枃妫€绱?| 鍊欓€変綔鑰呯殑鐩稿叧璇佹嵁璁烘枃 |
-| `scinet paper-search` | 杞婚噺搴曞眰璁烘枃妫€绱?| 蹇€熻鏂囧€欓€?|
-| `scinet literature-review` | 鏂囩尞缁艰堪 | 鏍稿績璁烘枃姹犮€佹椂闂寸嚎銆佸啓浣滄彁绀?|
-| `scinet idea-grounding` | idea 瀹氫綅 | 鐩镐技宸ヤ綔鍜屽樊寮傚寲璇佹嵁 |
-| `scinet idea-evaluate` | idea 璇勪及 | 鏂伴鎬с€佸彲琛屾€с€佸彲闈犳€ц瘉鎹?|
-| `scinet idea-generate` | idea 鐢熸垚 | 涓婚缁勫悎鍜?idea seeds |
-| `scinet trend-report` | 瓒嬪娍鍒嗘瀽 | 鍙戝睍鑴夌粶鍜屼唬琛ㄥ伐浣?|
-| `scinet researcher-review` | 鐮旂┒鑰呰儗鏅患杩?| 鐮旂┒杞ㄨ抗涓庝唬琛ㄨ鏂?|
-| `scinet skill` | 鍙紪杈?skill 娉ㄥ唽琛?| 鍙鐢ㄥ伐浣滄祦棰勮 |
+| `scinet search-papers` | 论文检索 | 相关论文和 Markdown 报告 |
+| `scinet related-authors` | 相关作者发现 | 候选作者与分数 |
+| `scinet author-papers` | 作者论文查询 | 指定作者论文 |
+| `scinet support-papers` | 支撑论文检索 | 候选作者的相关证据论文 |
+| `scinet paper-search` | 轻量底层论文检索 | 快速论文候选 |
+| `scinet literature-review` | 文献综述 | 核心论文池、时间线、写作提示 |
+| `scinet idea-grounding` | idea 定位 | 相似工作和差异化证据 |
+| `scinet idea-evaluate` | idea 评估 | 新颖性、可行性、可靠性证据 |
+| `scinet idea-generate` | idea 生成 | 主题组合和 idea seeds |
+| `scinet trend-report` | 趋势分析 | 发展脉络和代表工作 |
+| `scinet researcher-review` | 研究者背景综述 | 研究轨迹与代表论文 |
+| `scinet skill` | 可编辑 skill 注册表 | 可复用工作流预设 |
 
 ---
 
-## 馃洜锔?CLI 浼樺厛宸ヤ綔娴?
+## 🛠️ CLI 优先工作流
+
+SciNet 以 CLI 为优先界面，方便用户和 AI Agent 调用。
+
 ```bash
 scinet -h
 scinet search-papers -h
@@ -166,7 +214,7 @@ scinet literature-review -h
 scinet skill -h
 ```
 
-鍩虹妫€绱細
+基础检索：
 
 ```bash
 scinet search-papers \
@@ -180,16 +228,16 @@ scinet search-papers \
   --max-refs 0
 ```
 
-### 妫€绱㈡ā寮?
-| 妯″紡 | 鍚箟 | 閫傜敤鍦烘櫙 |
+### 检索模式
+| 模式 | 含义 | 适用场景 |
 |---|---|---|
-| `keyword` | 鍏抽敭璇嶉┍鍔?KG 妫€绱?| 鏈鏄庣‘ |
-| `semantic` | 璇箟妫€绱?| 瀹芥硾璇箟鍖归厤 |
-| `title` | 鏍囬閿氱偣妫€绱?| 宸茬煡浠ｈ〃璁烘枃 |
-| `hybrid` | 鍏抽敭璇?+ 璇箟 + 鏍囬 + 鍥炬父璧?| 榛樿鎺ㄨ崘 |
+| `keyword` | 关键词驱动 KG 检索 | 术语明确 |
+| `semantic` | 语义检索 | 宽泛语义匹配 |
+| `title` | 标题锚点检索 | 已知代表论文 |
+| `hybrid` | 关键词 + 语义 + 标题 + 图游走 | 默认推荐 |
 
-鏈寚瀹?`--retrieval-mode` 鏃讹紝榛樿浣跨敤 `hybrid`銆?
-### 涓撳閿氱偣
+未指定 `--retrieval-mode` 时，默认使用 `hybrid`。
+### 专家锚点
 
 ```bash
 --keyword "high:open world agent"
@@ -197,24 +245,24 @@ scinet search-papers \
 --reference "low:JARVIS-1: Open-World Multi-task Agents with Memory-Augmented Multimodal Language Models"
 ```
 
-### 鍥炬绱㈠亸缃?
-| 鍙傛暟 | 鍚箟 |
+### 图检索偏好
+| 参数 | 含义 |
 |---|---|
-| `--bias-keyword` | 鍏抽敭璇嶈矾寰勫己搴?|
-| `--bias-non-seed-keyword` | 闈炵瀛愬叧閿瘝鎵╁睍 |
-| `--bias-citation` | 寮曠敤杈瑰己搴?|
-| `--bias-related` | 璁烘枃鐩稿叧杈瑰己搴?|
-| `--bias-authorship` | 浣滆€?璁烘枃鍏崇郴寮哄害 |
-| `--bias-coauthorship` | 鍚堜綔鑰呯綉缁滃己搴?|
-| `--bias-cooccurrence` | 鍏抽敭璇嶅叡鐜板己搴?|
-| `--bias-exploration` | 鍥炬帰绱㈢▼搴?|
-| `--ranking-profile` | 鎺掑簭鍋忓ソ锛歚precision`銆乣balanced`銆乣discovery`銆乣impact` |
+| `--bias-keyword` | 关键词路径强度 |
+| `--bias-non-seed-keyword` | 非种子关键词扩展 |
+| `--bias-citation` | 引用边强度 |
+| `--bias-related` | 论文相关边强度 |
+| `--bias-authorship` | 作者-论文关系强度 |
+| `--bias-coauthorship` | 合作者网络强度 |
+| `--bias-cooccurrence` | 关键词共现强度 |
+| `--bias-exploration` | 图探索程度 |
+| `--ranking-profile` | 排序偏好：`precision`、`balanced`、`discovery`、`impact` |
 
 ---
 
-## 馃О 鍙紪杈?Skills
+## 🧰 可编辑 Skills
 
-SciNet skills 鏄笅娓哥鐮斿伐浣滄祦鐨?JSON 棰勮锛屾柟渚跨敤鎴锋煡鐪嬨€佸鐢ㄥ拰鑷畾涔夈€?
+SciNet skills 是下游科研工作流的 JSON 预设，方便用户查看、复用和自定义。
 ```bash
 scinet skill list
 scinet skill show literature-review
@@ -222,17 +270,17 @@ scinet skill run literature-review --query "open world agent" --keyword "high:op
 scinet skill run --dry-run literature-review --query "open world agent" --keyword "high:open world agent"
 ```
 
-鍒涘缓鑷畾涔?skill锛?
+创建自定义 skill：
 ```bash
 scinet skill init my-review --from literature-review
 ```
 
-瀹冧細鐢熸垚锛?
+它会生成：
 ```text
 ./skills/my-review.json
 ```
 
-鐢ㄦ埛鍙互鐩存帴淇敼 JSON锛岀劧鍚庤繍琛岋細
+用户可以直接修改 JSON，然后运行：
 
 ```bash
 scinet skill run my-review --query "your topic"
@@ -240,7 +288,7 @@ scinet skill run my-review --query "your topic"
 
 ---
 
-## 馃悕 Python SDK
+## 🐍 Python SDK
 
 ```python
 from scinet import SciNetClient
@@ -256,7 +304,7 @@ result = client.search_papers(
 print(result)
 ```
 
-涔熷彲浠ョ洿鎺ヤ紶鍏ラ厤缃細
+也可以直接传入配置：
 
 ```python
 client = SciNetClient(
@@ -267,7 +315,7 @@ client = SciNetClient(
 
 ---
 
-## 鈿欙笍 閰嶇疆璇存槑
+## ⚙️ 配置说明
 
 ```env
 SCINET_API_BASE_URL=http://scinet.openkg.cn
@@ -276,19 +324,20 @@ SCINET_TIMEOUT=900
 SCINET_RUNS_DIR=./runs
 ```
 
-鍏煎鏃у彉閲忥細
+兼容旧变量：
 
 ```env
 KG2API_BASE_URL=http://scinet.openkg.cn
 KG2API_API_KEY=your-personal-scinet-token
 ```
 
-鏂扮敤鎴锋帹鑽愪娇鐢?`SCINET_*`銆?
+新用户推荐使用 `SCINET_*`。
+
 ---
 
-## 馃И 绀轰緥鍛戒护
+## 🧪 示例命令
 
-### 鏂囩尞缁艰堪
+### 文献综述
 
 ```bash
 scinet literature-review \
@@ -324,42 +373,42 @@ scinet trend-report \
 
 ---
 
-## 馃摝 杈撳嚭涓庤繍琛屼骇鐗?
-缁堢榛樿杈撳嚭绠€娲佽〃鏍硷紝瀹屾暣缁撴灉淇濆瓨鍦細
+## 📦 输出与运行产物
+终端默认输出简洁表格，完整结果保存在：
 
 ```text
 runs/<run_id>/
 ```
 
-甯歌鏂囦欢锛?
-| 鏂囦欢 | 璇存槑 |
+常见文件：
+| 文件 | 说明 |
 |---|---|
-| `plan.json` | 缁撴瀯鍖栨绱㈣鍒?|
-| `request.json` | 鍙戦€佺粰 SciNet API 鐨勫畬鏁磋姹?|
-| `response.json` | 鍚庣鍘熷鍝嶅簲 |
-| `summary.txt` | 绠€鐭憳瑕?|
-| `report.md` | 闈㈠悜鐢ㄦ埛鐨?Markdown 鎶ュ憡 |
-| `metadata.json` | 杩愯鍏冧俊鎭?|
+| `plan.json` | 结构化检索计划 |
+| `request.json` | 发送给 SciNet API 的完整请求 |
+| `response.json` | 后端原始响应 |
+| `summary.txt` | 简短摘要 |
+| `report.md` | 面向用户的 Markdown 报告 |
+| `metadata.json` | 运行元信息 |
 
 ---
 
-## 馃洜锔?PDF 宸ヤ綔娴佷腑鐨?GROBID
+## 🛠️ PDF 工作流中的 GROBID
 
-GROBID 鐢ㄤ簬浠庣瀛?PDF 涓娊鍙栨爣棰樸€佷綔鑰呫€佹憳瑕佸拰鍙傝€冩枃鐚瓑缁撴瀯鍖栦俊鎭紝鍙湪 PDF 杈撳叆宸ヤ綔娴佷腑闇€瑕併€?
+GROBID 用于从科研 PDF 中抽取标题、作者、摘要和参考文献等结构化信息，只在 PDF 输入工作流中需要。
 ```bash
 docker pull lfoppiano/grobid:latest
 docker run -d --rm --name grobid -p 8070:8070 lfoppiano/grobid:latest
 curl http://127.0.0.1:8070/api/isalive
 ```
 
-閰嶇疆锛?
+配置：
 ```env
 GROBID_BASE_URL=http://127.0.0.1:8070
 ```
 
 ---
 
-## 馃搨 浠撳簱缁撴瀯
+## 📂 仓库结构
 
 ```text
 SciNet/
@@ -388,26 +437,28 @@ SciNet/
 
 ---
 
-## 馃Н 甯歌闂
+## 🧯 常见问题
 
-### `scinet health` 鎴愬姛锛屼絾 `search-papers` 杩斿洖 401
+### `scinet health` 成功，但 `search-papers` 返回 401
 
-璇存槑 Token 缂哄け鎴栨棤鏁堛€?
+说明 Token 缺失或无效。
 ```bash
 echo $SCINET_API_KEY
 export SCINET_API_KEY="your-personal-scinet-token"
 ```
 
-Windows CMD锛?
+Windows CMD：
 ```bat
 set SCINET_API_KEY=your-personal-scinet-token
 ```
 
-### 娌℃湁鏀跺埌閭楠岃瘉鐮?
-璇锋鏌ラ偖绠卞湴鍧€銆佸瀮鍦鹃偖浠跺拰楠岃瘉鐮侀噸鍙戦棿闅斻€?
-### 妫€绱㈠緢鎱㈡垨瓒呮椂
+### 没有收到邮箱验证码
 
-浣跨敤杞婚噺鍙傛暟锛?
+请检查邮箱地址、垃圾邮件和验证码重发间隔。
+
+### 检索很慢或超时
+
+使用轻量参数：
 ```bash
 --top-k 3
 --top-keywords 0
@@ -416,13 +467,13 @@ set SCINET_API_KEY=your-personal-scinet-token
 --bias-exploration low
 ```
 
-### Windows 涓婃壘涓嶅埌 `scinet` 鍛戒护
+### Windows 上找不到 `scinet` 命令
 
 ```bat
 .venv\Scripts\scinet.exe -h
 ```
 
-鎴栭噸鏂板畨瑁咃細
+或重新安装：
 
 ```bat
 .venv\Scripts\python.exe -m pip install -e .
@@ -430,21 +481,23 @@ set SCINET_API_KEY=your-personal-scinet-token
 
 ---
 
-## 馃椇锔?Roadmap
+## 🗺️ Roadmap
 
-- [ ] 鍙戝竷 PyPI 鍖咃紝鏀寔 `pip install scinet-client`
-- [ ] 澧炲姞 `scinet auth login/status/usage`
-- [ ] 澧炲姞鏇村鍐呯疆 agent skills
-- [ ] 鏀寔 Token 閲嶇疆鍜屽悐閿€
+- [ ] 发布 PyPI 包，支持 `pip install scinet-client`
+- [ ] 增加 `scinet auth login/status/usage`
+- [ ] 增加更多内置 agent skills
+- [ ] 支持 Token 重置和吊销
 - [ ] API Playground
-- [ ] MCP / Agent Runtime 闆嗘垚
-- [ ] 鎵╁睍璁烘枃涔嬪鐨勭煡璇嗙被鍨嬶紝濡傛暟鎹泦銆佷唬鐮併€佹爣鍑嗐€佸畾鐞嗗拰瀹為獙缁忛獙
-- [ ] 寤虹珛闈㈠悜绉戝鐮旂┒浠诲姟鐨勮瘎娴嬪熀鍑?- [ ] 鏇寸郴缁熺殑鍔ㄦ€佺煡璇嗘洿鏂版満鍒?
+- [ ] MCP / Agent Runtime 集成
+- [ ] 扩展论文之外的知识类型，如数据集、代码、标准、定理和实验经验
+- [ ] 建立面向科学研究任务的评测基准
+- [ ] 更系统的动态知识更新机制
+
 ---
 
-## 鉁嶏笍 Citation
+## ✍️ Citation
 
-濡傛灉 SciNet 瀵逛綘鐨勭爺绌舵湁甯姪锛岃寮曠敤锛?
+如果 SciNet 对你的研究有帮助，请引用：
 ```bibtex
 @article{scinet2026,
   title={SciNet: A Large-Scale Knowledge Graph for Automated Scientific Research},
@@ -456,6 +509,6 @@ set SCINET_API_KEY=your-personal-scinet-token
 
 ---
 
-## 馃搫 License
+## 📄 License
 
-鏈」鐩噰鐢?MIT License銆傝瑙?[LICENSE](LICENSE)銆?
+本项目采用 MIT License。详见 [LICENSE](LICENSE)。
