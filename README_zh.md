@@ -7,7 +7,11 @@
 </p>
 
 <p align="center">
+<<<<<<< HEAD
   <a href="docs/api/SCINET_API_DOC_zh.html">📚 API 文档站</a>
+=======
+  <a href="https://huadongjian.github.io/SciNet/api/SCINET_API_DOC_zh.html">📚 API 文档站</a>
+>>>>>>> 3d1a104 (Update docs and polish downstream frontend outputs)
 </p>
 
 <p align="center">
@@ -60,6 +64,7 @@
 ## 📑 目录
 
 - [✨ 项目概览](#-项目概览)
+<<<<<<< HEAD
 - [🚀 快速开始](#-快速开始)
 - [🔑 API Token](#-api-token)
 - [🧠 SciNet 能做什么](#-scinet-能做什么)
@@ -75,6 +80,42 @@
 - [🧯 常见问题](#-常见问题)
 - [🗺️ Roadmap](#-roadmap)
 - [✍️ Citation](#-citation)
+=======
+- [� 目录](#-目录)
+- [🚀 快速开始](#-快速开始)
+  - [1. 安装](#1-安装)
+  - [2. 注册 API Token](#2-注册-api-token)
+  - [3. 配置](#3-配置)
+  - [4. 测试](#4-测试)
+  - [5. 运行论文检索](#5-运行论文检索)
+- [🔑 API Token](#-api-token)
+  - [浏览器注册](#浏览器注册)
+  - [查询 Token 状态](#查询-token-状态)
+  - [查询用量](#查询用量)
+- [🧠 SciNet 能做什么](#-scinet-能做什么)
+- [🧩 支持任务](#-支持任务)
+- [🛠️ CLI 优先工作流](#️-cli-优先工作流)
+  - [检索模式](#检索模式)
+  - [专家锚点](#专家锚点)
+  - [图检索偏好](#图检索偏好)
+- [🧰 可编辑 Skills](#-可编辑-skills)
+- [🐍 Python SDK](#-python-sdk)
+- [⚙️ 配置说明](#️-配置说明)
+- [🧪 示例命令](#-示例命令)
+  - [文献综述](#文献综述)
+  - [Idea Evaluation](#idea-evaluation)
+  - [Trend Report](#trend-report)
+- [📦 输出与运行产物](#-输出与运行产物)
+- [🛠️ PDF 工作流中的 GROBID](#️-pdf-工作流中的-grobid)
+- [📂 仓库结构](#-仓库结构)
+- [🧯 常见问题](#-常见问题)
+  - [`scinet health` 成功，但 `search-papers` 返回 401](#scinet-health-成功但-search-papers-返回-401)
+  - [没有收到邮箱验证码](#没有收到邮箱验证码)
+  - [检索很慢或超时](#检索很慢或超时)
+  - [Windows 上找不到 `scinet` 命令](#windows-上找不到-scinet-命令)
+- [📝 TODO](#-todo)
+- [✍️ Citation](#️-citation)
+>>>>>>> 3d1a104 (Update docs and polish downstream frontend outputs)
 - [📄 License](#-license)
 
 ---
@@ -481,6 +522,7 @@ set SCINET_API_KEY=your-personal-scinet-token
 
 ---
 
+<<<<<<< HEAD
 ## 🗺️ Roadmap
 
 - [ ] 发布 PyPI 包，支持 `pip install scinet-client`
@@ -505,6 +547,24 @@ set SCINET_API_KEY=your-personal-scinet-token
   journal={arXiv preprint arXiv:2602.14367},
   year={2026}
 }
+=======
+## 📝 TODO
+
+- [ ] **命令行工具。** 增加更多面向用户的命令行功能，以便下游用户和 AI 代理无需接触数据库内部即可调用检索工作流。
+- [ ] **技能。** 为常见的科学发现工作流打包可重用的代理技能，并将最佳实践作为更易于加载的组件提供。
+- [ ] **更多知识。** 整合超越以论文为中心的实体之外的更多知识形式，例如数据集、代码、标准、定理和实验经验。
+- [ ] **基准测试与评估。** 为 SciNet 支持的下游科学研究任务构建专用基准测试和评估协议。
+- [ ] **动态更新** 改进动态知识更新机制，使其更加系统化并提高刷新频率。
+- [ ] **动态更新。** 改进动态知识更新机制，使其更加系统化并提高刷新频率。
+
+---
+
+## ✍️ Citation
+
+如果 SciNet 对你的研究有帮助，请引用：
+```
+
+>>>>>>> 3d1a104 (Update docs and polish downstream frontend outputs)
 ```
 
 ---
