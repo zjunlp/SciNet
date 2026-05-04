@@ -4940,7 +4940,7 @@ def build_parser() -> argparse.ArgumentParser:
   paper-search           Run lightweight low-level paper search
   make-report            Regenerate a Markdown report from saved artifacts
 
-Downstream channels:
+Skill system:\n  skill list             List editable downstream skills\n  skill run <name>       Run a skill preset\n  skill init <name>      Create a local editable skill\n\nDownstream channels:
   literature-review      Literature review material generation
   idea-grounding         Research idea grounding and related-work search
   idea-evaluate          Evidence collection for idea evaluation
@@ -5342,6 +5342,12 @@ purpose:
 
 
 def main() -> int:
+    if len(sys.argv) >= 2 and sys.argv[1] == "skill":
+        from .skills import dispatch_skill_cli
+        skill_result = dispatch_skill_cli(sys.argv[2:])
+        if isinstance(skill_result, int):
+            return int(skill_result)
+        sys.argv = [sys.argv[0], *skill_result]
 
     parser = build_parser()
 
