@@ -3,15 +3,23 @@
 </div>
 
 <p align="center">
+  🌐 <strong>English</strong> · <a href="README_zh.md">简体中文</a>
+</p>
+
+<p align="center">
+  <a href="https://huadongjian.github.io/SciNet/api/SCINET_API_DOC.html">📚 API Docs Website</a>
+</p>
+
+<p align="center">
   A pip-installable client and CLI for literature-grounded scientific research workflows on top of the hosted SciNet API.
 </p>
 
 <p align="center">
-  <a href="https://arxiv.org/abs/2602.14367">馃搫 arXiv</a>
-  路
-  <a href="http://scinet.openkg.cn/register">馃攽 Get API Token</a>
-  路
-  <a href="http://scinet.openkg.cn/healthz">馃┖ API Health</a>
+  <a href="https://arxiv.org/abs/2602.14367">📄 arXiv</a>
+  ·
+  <a href="http://scinet.openkg.cn/register">🔑 Get API Token</a>
+  ·
+  <a href="http://scinet.openkg.cn/healthz">🩺 API Health</a>
 </p>
 
 <p align="center">
@@ -27,47 +35,85 @@
 
 ---
 
-## 馃搼 Table of Contents
+## ✨ Overview
 
-- [鉁?Overview](#-overview)
-- [馃殌 Quick Start](#-quick-start)
-- [馃攽 API Token](#-api-token)
-- [馃 What SciNet Does](#-what-scinet-does)
-- [馃З Supported Tasks](#-supported-tasks)
-- [馃洜锔?CLI-First Workflow](#锔?cli-first-workflow)
-- [馃О Editable Skills](#-editable-skills)
-- [馃悕 Python SDK](#-python-sdk)
-- [鈿欙笍 Configuration](#锔?configuration)
-- [馃И Examples](#-examples)
-- [馃摝 Outputs and Artifacts](#-outputs-and-artifacts)
-- [馃洜锔?GROBID for PDF Workflows](#锔?grobid-for-pdf-workflows)
-- [馃搨 Repository Layout](#-repository-layout)
-- [馃Н Troubleshooting](#-troubleshooting)
-- [馃椇锔?Roadmap](#锔?roadmap)
-- [鉁嶏笍 Citation](#锔?citation)
-- [馃搫 License](#-license)
+SciNet is a research map you can use from the command line. Give it a topic, an idea, an author, or a paper trail, and it helps you look up literature, gather graph-backed evidence, and turn the result into readable reports and reusable JSON artifacts.
 
----
+Behind that simple workflow is a large scientific knowledge graph. SciNet connects papers, authors, institutions, venues, keywords, citations, and a four-level research taxonomy from domains down to topics. That means a search is not limited to matching words: it can follow how research areas, people, concepts, and papers relate to one another.
 
-## 鉁?Overview
+This repository packages that capability as a lightweight **SciNet client**. New users can install it with `pip`, register an API token, and start running literature-grounded research tasks without setting up Neo4j, maintaining graph data, or touching backend infrastructure.
 
-SciNet is a large-scale, multi-disciplinary, heterogeneous academic resource knowledge graph designed as a panoramic scientific evolution network. By integrating papers, authors, keywords, citations, disciplines, and other academic entities, SciNet provides a structured topological substrate for scientific discovery agents and research-assistance workflows.
+<p align="center">
+  <img src="imgs/field_distribution_pie.png" alt="SciNet field distribution across research areas" width="92%">
+</p>
 
-This repository provides a lightweight, user-facing **client package** for running literature-grounded research tasks on top of the hosted SciNet / KG2API backend.
+<p align="center">
+  <em>SciNet spans a broad research landscape, from medicine and social sciences to engineering, computer science, materials science, mathematics, and more.</em>
+</p>
 
-The client is responsible for:
+<p align="center">
+  <img src="imgs/schema.png" alt="SciNet knowledge graph schema" width="92%">
+</p>
 
-- building structured retrieval requests;
-- calling the hosted SciNet API;
-- formatting concise terminal outputs;
-- saving reproducible artifacts such as `request.json`, `response.json`, and `report.md`;
-- exposing downstream research workflows as editable CLI **skills**.
+<p align="center">
+  <em>The graph links papers with authors, institutions, sources, keywords, citations, related work, and the domain-field-subfield-topic hierarchy.</em>
+</p>
 
-Users do **not** need to connect to Neo4j, graph databases, or backend infrastructure directly.
+With the client, you can:
+
+- search for papers with keyword, semantic, title, reference, and graph-aware retrieval;
+- run research workflows such as literature review, idea grounding, idea evaluation, idea generation, trend analysis, related-author retrieval, and researcher profiling;
+- save reproducible outputs such as `request.json`, `response.json`, `summary.txt`, and `report.md`;
+- customize downstream workflows through editable CLI **skills**.
 
 ---
 
-## 馃殌 Quick Start
+## 📑 Table of Contents
+
+- [✨ Overview](#-overview)
+- [� Table of Contents](#-table-of-contents)
+- [🚀 Quick Start](#-quick-start)
+  - [1. Install](#1-install)
+  - [2. Register an API Token](#2-register-an-api-token)
+  - [3. Configure](#3-configure)
+  - [4. Test](#4-test)
+  - [5. Run a Paper Search](#5-run-a-paper-search)
+- [🔑 API Token](#-api-token)
+  - [Browser Registration](#browser-registration)
+  - [Check Token Status](#check-token-status)
+  - [Check Usage](#check-usage)
+- [🧠 What SciNet Does](#-what-scinet-does)
+- [🧩 Supported Tasks](#-supported-tasks)
+- [🛠️ CLI-First Workflow](#️-cli-first-workflow)
+  - [Help](#help)
+  - [Basic Retrieval](#basic-retrieval)
+  - [Retrieval Modes](#retrieval-modes)
+  - [Expert Anchors](#expert-anchors)
+  - [Graph Bias Parameters](#graph-bias-parameters)
+- [🧰 Editable Skills](#-editable-skills)
+- [🐍 Python SDK](#-python-sdk)
+- [⚙️ Configuration](#️-configuration)
+- [🧪 Examples](#-examples)
+  - [Literature Review](#literature-review)
+  - [Idea Evaluation](#idea-evaluation)
+  - [Idea Generation](#idea-generation)
+  - [Trend Report](#trend-report)
+  - [Researcher Review](#researcher-review)
+- [📦 Outputs and Artifacts](#-outputs-and-artifacts)
+- [🛠️ GROBID for PDF Workflows](#️-grobid-for-pdf-workflows)
+- [📂 Repository Layout](#-repository-layout)
+- [🧯 Troubleshooting](#-troubleshooting)
+  - [`scinet health` works but `search-papers` returns 401](#scinet-health-works-but-search-papers-returns-401)
+  - [No email verification code](#no-email-verification-code)
+  - [Retrieval is slow or times out](#retrieval-is-slow-or-times-out)
+  - [`scinet` command is not found on Windows](#scinet-command-is-not-found-on-windows)
+- [📝 TODO](#-todo)
+- [✍️ Citation](#️-citation)
+- [📄 License](#-license)
+
+---
+
+## 🚀 Quick Start
 
 ### 1. Install
 
@@ -133,7 +179,7 @@ scinet search-papers \
 
 ---
 
-## 馃攽 API Token
+## 🔑 API Token
 
 SciNet uses personal API tokens for public access.
 
@@ -171,7 +217,7 @@ curl -H "Authorization: Bearer $SCINET_API_KEY" \
 
 ---
 
-## 馃 What SciNet Does
+## 🧠 What SciNet Does
 
 SciNet is built for research workflows rather than plain keyword search.
 
@@ -182,7 +228,7 @@ SciNet is built for research workflows rather than plain keyword search.
 
 ---
 
-## 馃З Supported Tasks
+## 🧩 Supported Tasks
 
 | Command | Scenario | Main Output |
 |---|---|---|
@@ -201,7 +247,7 @@ SciNet is built for research workflows rather than plain keyword search.
 
 ---
 
-## 馃洜锔?CLI-First Workflow
+## 🛠️ CLI-First Workflow
 
 SciNet is CLI-first. The CLI is the primary interface for both users and AI agents.
 
@@ -273,7 +319,7 @@ Recommended safe defaults:
 
 ---
 
-## 馃О Editable Skills
+## 🧰 Editable Skills
 
 SciNet skills are JSON presets for downstream research workflows. They make complex workflows easier to inspect, reuse, and customize.
 
@@ -312,7 +358,7 @@ User-defined skills can override built-in skills with the same name.
 
 ---
 
-## 馃悕 Python SDK
+## 🐍 Python SDK
 
 SciNet also provides a lightweight Python client.
 
@@ -347,7 +393,7 @@ print(client.token_status())
 
 ---
 
-## 鈿欙笍 Configuration
+## ⚙️ Configuration
 
 ```env
 SCINET_API_BASE_URL=http://scinet.openkg.cn
@@ -367,7 +413,7 @@ For new setups, prefer `SCINET_*`.
 
 ---
 
-## 馃И Examples
+## 🧪 Examples
 
 ### Literature Review
 
@@ -428,7 +474,7 @@ scinet researcher-review \
 
 ---
 
-## 馃摝 Outputs and Artifacts
+## 📦 Outputs and Artifacts
 
 Terminal output is concise and table-based. Full outputs are saved under:
 
@@ -449,7 +495,7 @@ Common artifacts:
 
 ---
 
-## 馃洜锔?GROBID for PDF Workflows
+## 🛠️ GROBID for PDF Workflows
 
 GROBID extracts structured metadata from scientific PDFs, including titles, authors, abstracts, and references. It is only needed for PDF-based workflows.
 
@@ -467,7 +513,7 @@ GROBID_BASE_URL=http://127.0.0.1:8070
 
 ---
 
-## 馃搨 Repository Layout
+## 📂 Repository Layout
 
 ```text
 SciNet/
@@ -496,7 +542,7 @@ SciNet/
 
 ---
 
-## 馃Н Troubleshooting
+## 🧯 Troubleshooting
 
 ### `scinet health` works but `search-papers` returns 401
 
@@ -545,35 +591,27 @@ or reinstall:
 
 ---
 
-## 馃椇锔?Roadmap
+## 📝 TODO
 
-- [ ] PyPI release for `pip install scinet-client`
-- [ ] `scinet auth login/status/usage`
-- [ ] More built-in skills for agent workflows
-- [ ] Token reset and revoke support
-- [ ] API playground
-- [ ] MCP / agent runtime integration
-- [ ] Broader knowledge types beyond papers, such as datasets, code, standards, theorems, and experimental experience
-- [ ] Dedicated benchmarks for scientific research tasks
-- [ ] More systematic dynamic knowledge updates
+- [ ] **CLI Tools.** Add more user-facing CLI capabilities so downstream users and AI agents can invoke retrieval workflows without touching database internals.
+- [ ] **Skills.** Package reusable agent skills for common scientific discovery workflows and expose best practices as easier-to-load components.
+- [ ] **More Knowledge.** Integrate more knowledge forms beyond paper-centric entities, such as datasets, code, standards, theorems, and experimental experience.
+- [ ] **Benchmark and Evaluation.** Build dedicated benchmarks and evaluation protocols for downstream scientific research tasks supported by SciNet.
+- [ ] **Dynamic Update**Improve dynamic knowledge updates toward a more systematic and frequent refresh mechanism.
+- [ ] **Dynamic Update.** Improve dynamic knowledge updates toward a more systematic and frequent refresh mechanism.
 
 ---
 
-## 鉁嶏笍 Citation
+## ✍️ Citation
 
 If you find SciNet helpful, please cite:
 
-```bibtex
-@article{scinet2026,
-  title={SciNet: A Large-Scale Knowledge Graph for Automated Scientific Research},
-  author={SciNet Team},
-  journal={arXiv preprint arXiv:2602.14367},
-  year={2026}
-}
+```
+
 ```
 
 ---
 
-## 馃搫 License
+## 📄 License
 
 This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
