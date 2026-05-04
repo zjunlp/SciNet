@@ -3,14 +3,28 @@
 </div>
 
 <p align="center">
-  Open-source client for running literature-grounded scientific research tasks on top of SciNet API.
+  🌐 <strong>English</strong> · <a href="README_zh.md">简体中文</a>
 </p>
+
 <p align="center">
-  <a href="https://arxiv.org/abs/2602.14367">📄arXiv</a>
+  <a href="docs/api/SCINET_API_DOC.html">📚 API Docs Website</a>
 </p>
+
+<p align="center">
+  A pip-installable client and CLI for literature-grounded scientific research workflows on top of the hosted SciNet API.
+</p>
+
+<p align="center">
+  <a href="https://arxiv.org/abs/2602.14367">📄 arXiv</a>
+  ·
+  <a href="http://scinet.openkg.cn/register">🔑 Get API Token</a>
+  ·
+  <a href="http://scinet.openkg.cn/healthz">🩺 API Health</a>
+</p>
+
 <p align="center">
   <a href="https://github.com/zjunlp/SciNet">
-  	<img src="https://awesome.re/badge.svg" alt="Awesome">
+    <img src="https://awesome.re/badge.svg" alt="Awesome">
   </a>
   <a href="https://github.com/zjunlp/SciNet/blob/main/LICENSE">
     <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License: MIT">
@@ -19,72 +33,448 @@
   <img src="https://img.shields.io/badge/PRs-Welcome-red" alt="PRs Welcome">
 </p>
 
-------
+---
+
+## ✨ Overview
+
+SciNet is a research map you can use from the command line. Give it a topic, an idea, an author, or a paper trail, and it helps you look up literature, gather graph-backed evidence, and turn the result into readable reports and reusable JSON artifacts.
+
+Behind that simple workflow is a large scientific knowledge graph. SciNet connects papers, authors, institutions, venues, keywords, citations, and a four-level research taxonomy from domains down to topics. That means a search is not limited to matching words: it can follow how research areas, people, concepts, and papers relate to one another.
+
+This repository packages that capability as a lightweight **SciNet client**. New users can install it with `pip`, register an API token, and start running literature-grounded research tasks without setting up Neo4j, maintaining graph data, or touching backend infrastructure.
+
+<p align="center">
+  <img src="imgs/field_distribution_pie.png" alt="SciNet field distribution across research areas" width="92%">
+</p>
+
+<p align="center">
+  <em>SciNet spans a broad research landscape, from medicine and social sciences to engineering, computer science, materials science, mathematics, and more.</em>
+</p>
+
+<p align="center">
+  <img src="imgs/schema.png" alt="SciNet knowledge graph schema" width="92%">
+</p>
+
+<p align="center">
+  <em>The graph links papers with authors, institutions, sources, keywords, citations, related work, and the domain-field-subfield-topic hierarchy.</em>
+</p>
+
+With the client, you can:
+
+- search for papers with keyword, semantic, title, reference, and graph-aware retrieval;
+- run research workflows such as literature review, idea grounding, idea evaluation, idea generation, trend analysis, related-author retrieval, and researcher profiling;
+- save reproducible outputs such as `request.json`, `response.json`, `summary.txt`, and `report.md`;
+- customize downstream workflows through editable CLI **skills**.
+
+---
 
 ## 📑 Table of Contents
 
 - [✨ Overview](#-overview)
-- [🧩 Supported Tasks](#-supported-tasks)
-- [🛠️ GROBID](#-grobid)
-- [📂 Layout](#-repository-layout)
 - [🚀 Quick Start](#-quick-start)
-- [🧪 Run Tasks](#-run-tasks)
-  - [`Idea Grounding and Evaluation`](#idea-grounding-and-evaluation)
-  - [`Idea Generation`](#idea-generation)
-  - [`Research Trend Predicting`](#research-trend-predicting)
-  - [`Related Author Retrieval`](#related-author-retrieval)
-  - [`Researcher Background Review`](#researcher-background-review)
-- [📝 TODO](#-todo)
+- [🔑 API Token](#-api-token)
+- [🧠 What SciNet Does](#-what-scinet-does)
+- [🧩 Supported Tasks](#-supported-tasks)
+- [🛠️ CLI-First Workflow](#-cli-first-workflow)
+- [🧰 Editable Skills](#-editable-skills)
+- [🐍 Python SDK](#-python-sdk)
+- [⚙️ Configuration](#-configuration)
+- [🧪 Examples](#-examples)
+- [📦 Outputs and Artifacts](#-outputs-and-artifacts)
+- [🛠️ GROBID for PDF Workflows](#-grobid-for-pdf-workflows)
+- [📂 Repository Layout](#-repository-layout)
+- [🧯 Troubleshooting](#-troubleshooting)
+- [🗺️ Roadmap](#-roadmap)
 - [✍️ Citation](#-citation)
+- [📄 License](#-license)
 
-## ✨ Overview
+---
 
-SciNet is a large-scale, multi-disciplinary, heterogeneous academic resource knowledge graph designed as a panoramic scientific evolution network. By integrating over 43M papers from 26 disciplines, and a total of 157M entites and 3B triplets, SciNet provides a structured topological cognitive substrate that dismantles disciplinary barriers and furnishes AI agents with a global perspective.
+## 🚀 Quick Start
 
-<img src="imgs/field_distribution_pie.png" alt="field_distribution_pie" style="zoom:7%;" />
+### 1. Install
 
-<div align="center">
-  Discipline Distribution in SciNet
-</div>
+Install directly from GitHub:
 
-<img src="imgs/schema.png" alt="schema" style="zoom:10%;" />
+```bash
+pip install "git+https://github.com/zjunlp/SciNet.git#subdirectory=scinet"
+```
 
-<div align="center">
-  Schema of SciNet
-</div>
+For isolated CLI usage:
 
-This repository provides a runnable client for several scientific research workflows, including idea evaluation, topic review, author discovery, author profiling, and idea generation.
+```bash
+pipx install "git+https://github.com/zjunlp/SciNet.git#subdirectory=scinet"
+```
 
-Each run is driven by CLI inputs plus optional runtime parameter overrides. The client also writes a `request.json` file into the run directory so every execution remains easy to inspect and reproduce later.
+After installation:
 
-The local client is responsible for:
+```bash
+scinet -h
+```
 
-- building a structured request
-- calling a hosted `SciNet API`
-- running client-side post-processing such as reranking, PDF parsing, grounding, and Markdown report generation
+### 2. Register an API Token
 
-Users do **not** need to connect to Neo4j or other database components directly.
+Open:
+
+```text
+http://scinet.openkg.cn/register
+```
+
+Complete email verification and copy your personal token.
+
+### 3. Configure
+
+Linux / macOS:
+
+```bash
+export SCINET_API_BASE_URL="http://scinet.openkg.cn"
+export SCINET_API_KEY="your-personal-scinet-token"
+```
+
+Windows CMD:
+
+```bat
+set SCINET_API_BASE_URL=http://scinet.openkg.cn
+set SCINET_API_KEY=your-personal-scinet-token
+```
+
+### 4. Test
+
+```bash
+scinet health
+scinet config
+```
+
+### 5. Run a Paper Search
+
+```bash
+scinet search-papers \
+  --query "open world agent" \
+  --keyword "high:open world agent" \
+  --top-k 3
+```
+
+---
+
+## 🔑 API Token
+
+SciNet uses personal API tokens for public access.
+
+### Browser Registration
+
+Visit:
+
+```text
+http://scinet.openkg.cn/register
+```
+
+Steps:
+
+1. enter your name, email, organization, and use case;
+2. click **Send code**;
+3. check your inbox for the verification code;
+4. enter the code and create a token;
+5. copy the returned `scinet_xxx` token.
+
+The token is shown only once.
+
+### Check Token Status
+
+```bash
+curl -H "Authorization: Bearer $SCINET_API_KEY" \
+  http://scinet.openkg.cn/v1/auth/token/status
+```
+
+### Check Usage
+
+```bash
+curl -H "Authorization: Bearer $SCINET_API_KEY" \
+  "http://scinet.openkg.cn/v1/auth/usage?days=7"
+```
+
+---
+
+## 🧠 What SciNet Does
+
+SciNet is built for research workflows rather than plain keyword search.
+
+1. **Search + KG Retrieval**: retrieve papers using keywords, semantic matching, title anchors, references, and graph propagation.
+2. **Research Workflow Automation**: run literature review, idea grounding, idea evaluation, idea generation, trend analysis, related-author retrieval, and researcher profiling.
+3. **Agent-Friendly Outputs**: every run keeps machine-readable JSON artifacts and a human-readable Markdown report.
+4. **Editable Skills**: downstream workflows can be represented as JSON skills, inspected, copied, modified, and invoked through CLI.
+
+---
 
 ## 🧩 Supported Tasks
 
-| Task Type | Required Input | Main Output |
-| --- | --- | --- |
-| `Idea Grounding and Evaluation` | `--idea-text` or `--pdf-path` | grounded evidence, paragraph matches, and idea-level analysis |
-| `Idea Generation` | `--topic-text` | generated ideas grounded in retrieved literature |
-| `Research Trend Predicting` | `--topic-text` | topic evolution summary and representative papers |
-| `Related Author Retrieval` | `--idea-text` or `--pdf-path` | related authors and supporting papers |
-| `Researcher Background Review` | `--author-name` | research trajectory and representative works |
+| Command | Scenario | Main Output |
+|---|---|---|
+| `scinet search-papers` | Paper search | Related papers and Markdown report |
+| `scinet related-authors` | Related-author discovery | Candidate authors and scores |
+| `scinet author-papers` | Author paper lookup | Papers by a specified author |
+| `scinet support-papers` | Support-paper retrieval | Evidence papers for candidate authors |
+| `scinet paper-search` | Lightweight low-level paper search | Fast paper candidates |
+| `scinet literature-review` | Literature review | Core paper pool, timeline, writing hints |
+| `scinet idea-grounding` | Idea grounding | Similar works and differentiation evidence |
+| `scinet idea-evaluate` | Idea evaluation | Evidence for novelty, feasibility, and soundness |
+| `scinet idea-generate` | Idea generation | Topic combinations and idea seeds |
+| `scinet trend-report` | Trend analysis | Evolution evidence and representative works |
+| `scinet researcher-review` | Researcher background review | Research trajectory and representative works |
+| `scinet skill` | Editable skill registry | Reusable workflow presets |
 
-## 🛠️ GROBID
+---
 
-GROBID extracts structured metadata from scientific PDFs, including titles, authors, abstracts, and references.
+## 🛠️ CLI-First Workflow
 
-GROBID is needed for:
+SciNet is CLI-first. The CLI is the primary interface for both users and AI agents.
 
-- `Idea Grounding and Evaluation`
-- `Related Author Retrieval` when using `--pdf-path`
+### Help
 
-Example startup with Docker:
+```bash
+scinet -h
+scinet search-papers -h
+scinet literature-review -h
+scinet skill -h
+```
+
+### Basic Retrieval
+
+```bash
+scinet search-papers \
+  --query "open world agent" \
+  --domain "artificial intelligence" \
+  --time-range 2020-2024 \
+  --keyword "high:open world agent" \
+  --top-k 3 \
+  --top-keywords 0 \
+  --max-titles 0 \
+  --max-refs 0
+```
+
+### Retrieval Modes
+
+| Mode | Meaning | Best For |
+|---|---|---|
+| `keyword` | Keyword-driven KG retrieval | Clear terminology |
+| `semantic` | Semantic retrieval | Broad semantic matching |
+| `title` | Title-anchor retrieval | Known paper titles |
+| `hybrid` | Keyword + semantic + title + graph walk | Default and recommended |
+
+If `--retrieval-mode` is omitted, SciNet uses `hybrid`.
+
+### Expert Anchors
+
+```bash
+--keyword "high:open world agent"
+--title "middle:Voyager: An Open-Ended Embodied Agent with Large Language Models"
+--reference "low:JARVIS-1: Open-World Multi-task Agents with Memory-Augmented Multimodal Language Models"
+```
+
+### Graph Bias Parameters
+
+| Parameter | Meaning |
+|---|---|
+| `--bias-keyword` | Keyword association strength |
+| `--bias-non-seed-keyword` | Non-seed keyword expansion |
+| `--bias-citation` | Citation edge strength |
+| `--bias-related` | Paper relatedness strength |
+| `--bias-authorship` | Author-paper relation strength |
+| `--bias-coauthorship` | Coauthor network strength |
+| `--bias-cooccurrence` | Keyword co-occurrence strength |
+| `--bias-exploration` | Graph exploration level |
+| `--ranking-profile` | Ranking preference: `precision`, `balanced`, `discovery`, `impact` |
+
+Recommended safe defaults:
+
+```bash
+--top-k 3
+--top-keywords 0
+--max-titles 0
+--max-refs 0
+--bias-exploration low
+```
+
+---
+
+## 🧰 Editable Skills
+
+SciNet skills are JSON presets for downstream research workflows. They make complex workflows easier to inspect, reuse, and customize.
+
+```bash
+scinet skill list
+scinet skill show literature-review
+scinet skill run literature-review --query "open world agent" --keyword "high:open world agent"
+scinet skill run --dry-run literature-review --query "open world agent" --keyword "high:open world agent"
+```
+
+Create a custom skill:
+
+```bash
+scinet skill init my-review --from literature-review
+```
+
+This creates:
+
+```text
+./skills/my-review.json
+```
+
+Edit it, then run:
+
+```bash
+scinet skill run my-review --query "your topic"
+```
+
+User-defined skills are loaded from:
+
+1. `./skills/*.json`
+2. `~/.scinet/skills/*.json`
+3. directories specified by `SCINET_SKILLS_DIR`
+
+User-defined skills can override built-in skills with the same name.
+
+---
+
+## 🐍 Python SDK
+
+SciNet also provides a lightweight Python client.
+
+```python
+from scinet import SciNetClient
+
+client = SciNetClient()
+
+print(client.health())
+
+result = client.search_papers(
+    query="open world agent",
+    keywords=[{"text": "open world agent", "score": 10}],
+    top_k=3,
+)
+
+print(result)
+```
+
+You can also pass credentials directly:
+
+```python
+from scinet import SciNetClient
+
+client = SciNetClient(
+    base_url="http://scinet.openkg.cn",
+    api_key="your-personal-scinet-token",
+)
+
+print(client.token_status())
+```
+
+---
+
+## ⚙️ Configuration
+
+```env
+SCINET_API_BASE_URL=http://scinet.openkg.cn
+SCINET_API_KEY=your-personal-scinet-token
+SCINET_TIMEOUT=900
+SCINET_RUNS_DIR=./runs
+```
+
+Optional compatibility variables:
+
+```env
+KG2API_BASE_URL=http://scinet.openkg.cn
+KG2API_API_KEY=your-personal-scinet-token
+```
+
+For new setups, prefer `SCINET_*`.
+
+---
+
+## 🧪 Examples
+
+### Literature Review
+
+```bash
+scinet literature-review \
+  --query "retrieval augmented generation" \
+  --domain "artificial intelligence" \
+  --time-range 2020-2025 \
+  --keyword "high:retrieval augmented generation" \
+  --top-k 5
+```
+
+### Idea Evaluation
+
+```bash
+scinet idea-evaluate \
+  --idea "LLM-based multi-perspective evaluation for scientific research ideas" \
+  --domain "artificial intelligence" \
+  --time-range 2020-2025 \
+  --keyword "high:idea evaluation" \
+  --keyword "middle:LLM as a judge" \
+  --top-k 3
+```
+
+### Idea Generation
+
+```bash
+scinet idea-generate \
+  --query "knowledge editing for large language models" \
+  --domain "artificial intelligence" \
+  --time-range 2020-2025 \
+  --keyword "high:knowledge editing" \
+  --keyword "middle:large language models" \
+  --keyword "low:continual learning" \
+  --top-k 5
+```
+
+### Trend Report
+
+```bash
+scinet trend-report \
+  --query "retrieval augmented generation" \
+  --domain "artificial intelligence" \
+  --time-range 2020-2025 \
+  --keyword "high:retrieval augmented generation" \
+  --keyword "middle:knowledge graph" \
+  --top-k 5
+```
+
+### Researcher Review
+
+```bash
+scinet researcher-review \
+  --author "Yoshua Bengio" \
+  --limit 10 \
+  --no-abstract
+```
+
+---
+
+## 📦 Outputs and Artifacts
+
+Terminal output is concise and table-based. Full outputs are saved under:
+
+```text
+runs/<run_id>/
+```
+
+Common artifacts:
+
+| File | Description |
+|---|---|
+| `plan.json` | Structured search plan |
+| `request.json` | Full request sent to SciNet API |
+| `response.json` | Raw backend response |
+| `summary.txt` | Short summary |
+| `report.md` | User-facing Markdown report |
+| `metadata.json` | Runtime metadata |
+
+---
+
+## 🛠️ GROBID for PDF Workflows
+
+GROBID extracts structured metadata from scientific PDFs, including titles, authors, abstracts, and references. It is only needed for PDF-based workflows.
 
 ```bash
 docker pull lfoppiano/grobid:latest
@@ -92,194 +482,121 @@ docker run -d --rm --name grobid -p 8070:8070 lfoppiano/grobid:latest
 curl http://127.0.0.1:8070/api/isalive
 ```
 
-## 📂 Layout
-
-This repository is a lightweight client for SciNet workflows.
-
-- `run_scinet.py`: main entrypoint for runs
-- `scinet/`: main runtime package, including CLI handling, task dispatch, retrieval, grounding, and Markdown rendering
-- `references/search/`: reference and demonstration code for the search logic; it is kept for inspection and illustration, and is not part of the default runtime path
-
-## 🚀 Quick Start
-
-Use the following steps to get a working run from a clean checkout.
-
-### 1. Create an environment and install dependencies
-
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -U pip
-pip install -r requirements.txt
-```
-
-### 2. Create the environment file
-
-```bash
-cp .env.example .env
-```
-
-We currently provide a public `SciNet API` endpoint for community use. Fill in the required variables:
+Then configure:
 
 ```env
-SCINET_API_BASE_URL=http://scinet.openkg.cn
-SCINET_API_KEY=scinet-public-key
-
-LLM_PROVIDER=openai_compatible
-LLM_API_KEY=replace-me
-LLM_BASE_URL=https://your-openai-compatible-endpoint/v1
-LLM_MODEL=your-model-name
-
-# Legacy compatibility keys. New setups should prefer LLM_*.
-OPENAI_API_KEY=replace-me
-OPENAI_BASE_URL=https://your-openai-compatible-endpoint/v1
-OPENAI_MODEL=your-model-name
-
 GROBID_BASE_URL=http://127.0.0.1:8070
-OA_API_KEY=
-OPENALEX_MAILTO=
 ```
 
-You can get an OpenAlex API key from [here](https://openalex.org/settings/api-key).
+---
 
-Required variables:
+## 📂 Repository Layout
 
-| Variable | Required For | Notes |
-| --- | --- | --- |
-| `SCINET_API_BASE_URL` | all tasks | hosted `SciNet API` base URL |
-| `SCINET_API_KEY` | all tasks | sent as `X-API-Key` |
-| `LLM_PROVIDER` | all tasks | provider selector, currently `openai_compatible` |
-| `LLM_API_KEY` | all tasks | used for planning, reranking, and summarization |
-| `LLM_BASE_URL` | all tasks | OpenAI-compatible base URL |
-| `LLM_MODEL` | all tasks | chat model name |
-| `GROBID_BASE_URL` | PDF tasks | needed for `--pdf-path` flows |
-| `OA_API_KEY` | optional | OpenAlex fallback support |
-| `OPENALEX_MAILTO` | optional | OpenAlex contact email |
+```text
+SciNet/
+  pyproject.toml
+  README.md
+  README_zh.md
+  README_skills.md
+  .env.example
+  src/
+    scinet/
+      __init__.py
+      cli.py
+      client.py
+      config.py
+      skills.py
+      builtin_skills.json
+  examples/
+    search_papers.sh
+    literature_review.sh
+    idea_evaluate.sh
+  tests/
+    test_import.py
+  references/
+    search/
+```
 
-### 3. Make sure the required services are ready
+---
 
-- a hosted `SciNet API`
-- an LLM endpoint exposed in OpenAI-compatible format
-- GROBID if you want to use `--pdf-path`
+## 🧯 Troubleshooting
 
-### 4. Run a task
+### `scinet health` works but `search-papers` returns 401
+
+Your token is missing or invalid.
 
 ```bash
-python3 run_scinet.py \
-  --task-type "Research Trend Predicting" \
-  --topic-text "research idea evaluation with large language models" \
-  --pretty
+echo $SCINET_API_KEY
+export SCINET_API_KEY="your-personal-scinet-token"
 ```
 
-### 5. Check the output
+Windows CMD:
 
-Each run creates a directory under `runs/` containing:
+```bat
+set SCINET_API_KEY=your-personal-scinet-token
+```
 
-- `request.json`
-- `result.json`
-- `result.md`
+### No email verification code
 
-## 🧪 Run Tasks
+Check the email address, spam folder, and resend interval.
 
-### `Idea Grounding and Evaluation`
+### Retrieval is slow or times out
+
+Use lightweight settings:
 
 ```bash
-python3 run_scinet.py \
-  --task-type "Idea Grounding and Evaluation" \
-  --idea-text "Use literature-grounded evidence to evaluate research ideas." \
-  --pretty
+--top-k 3
+--top-keywords 0
+--max-titles 0
+--max-refs 0
+--bias-exploration low
 ```
 
-With PDF input:
+### `scinet` command is not found on Windows
 
-```bash
-python3 run_scinet.py \
-  --task-type "Idea Grounding and Evaluation" \
-  --pdf-path /absolute/path/to/paper.pdf \
-  --params-json '{"search_final_top_k": 15, "manifest_top_k": 10}' \
-  --pretty
+Use the virtual environment executable directly:
+
+```bat
+.venv\Scripts\scinet.exe -h
 ```
 
-### `Idea Generation`
+or reinstall:
 
-```bash
-python3 run_scinet.py \
-  --task-type "Idea Generation" \
-  --topic-text "scientific idea generation with retrieval-augmented large language models" \
-  --pretty
+```bat
+.venv\Scripts\python.exe -m pip install -e .
 ```
 
-### `Research Trend Predicting`
+---
 
-```bash
-python3 run_scinet.py \
-  --task-type "Research Trend Predicting" \
-  --topic-text "research idea evaluation with large language models" \
-  --pretty
-```
+## 🗺️ Roadmap
 
-### `Related Author Retrieval`
+- [ ] PyPI release for `pip install scinet-client`
+- [ ] `scinet auth login/status/usage`
+- [ ] More built-in skills for agent workflows
+- [ ] Token reset and revoke support
+- [ ] API playground
+- [ ] MCP / agent runtime integration
+- [ ] Broader knowledge types beyond papers, such as datasets, code, standards, theorems, and experimental experience
+- [ ] Dedicated benchmarks for scientific research tasks
+- [ ] More systematic dynamic knowledge updates
 
-```bash
-python3 run_scinet.py \
-  --task-type "Related Author Retrieval" \
-  --idea-text "knowledge-grounded evaluation of scientific research ideas" \
-  --pretty
-```
-
-### `Researcher Background Review`
-
-```bash
-python3 run_scinet.py \
-  --task-type "Researcher Background Review" \
-  --author-name "Geoffrey Hinton" \
-  --pretty
-```
-
-You can also override task parameters from your own JSON file:
-
-```bash
-python3 run_scinet.py \
-  --task-type "Idea Grounding and Evaluation" \
-  --idea-text "Use literature-grounded evidence to evaluate research ideas." \
-  --params-file /absolute/path/to/params.json \
-  --pretty
-```
-
-For `Idea Grounding and Evaluation`, model-related overrides can be supplied through `--params-file` or `--params-json`.
-You can also set local model paths once in `.env`:
-
-```bash
-SCINET_EMBEDDING_MODEL_PATH=/absolute/path/to/BAAI--bge-large-en-v1.5
-SCINET_RERANKER_MODEL_PATH=/absolute/path/to/BAAI--bge-reranker-large
-```
-
-`grounded_review` also accepts `query_provider`, `query_model`, and `query_api_url` overrides in `params`.
-If omitted, it resolves them from `LLM_PROVIDER`, `LLM_MODEL`, and `LLM_BASE_URL`.
-
-By default, `Idea Grounding and Evaluation` uses:
-
-- embedding model: `BAAI/bge-large-en-v1.5` [huggingface_url](https://huggingface.co/BAAI/bge-large-en-v1.5)
-- reranker model: `BAAI/bge-reranker-large` [huggingface_url](https://huggingface.co/BAAI/bge-reranker-large)
-
-The first run may download these models into the local Hugging Face cache.
-
-## 📝 TODO
-
-- [ ] **CLI Tools.** Add more user-facing CLI capabilities so downstream users and AI agents can invoke retrieval workflows without touching database internals.
-- [ ] **Skills.** Package reusable agent skills for common scientific discovery workflows and expose best practices as easier-to-load components.
-- [ ] **More Knowledge.** Integrate more knowledge forms beyond paper-centric entities, such as datasets, code, standards, theorems, and experimental experience.
-- [ ] **Benchmark and Evaluation.** Build dedicated benchmarks and evaluation protocols for downstream scientific research tasks supported by SciNet.
-- [ ] **Dynamic Update.** Improve dynamic knowledge updates toward a more systematic and frequent refresh mechanism.
+---
 
 ## ✍️ Citation
 
-If you find our work helpful, please use the following citations.
+If you find SciNet helpful, please cite:
 
+```bibtex
+@article{scinet2026,
+  title={SciNet: A Large-Scale Knowledge Graph for Automated Scientific Research},
+  author={SciNet Team},
+  journal={arXiv preprint arXiv:2602.14367},
+  year={2026}
+}
 ```
 
-```
+---
 
-### License
+## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
