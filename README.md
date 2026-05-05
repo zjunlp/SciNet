@@ -7,7 +7,11 @@
 </p>
 
 <p align="center">
+<<<<<<< HEAD
   <a href="docs/api/SCINET_API_DOC.html">📚 API Docs Website</a>
+=======
+  <a href="https://huadongjian.github.io/SciNet/api/SCINET_API_DOC.html">📚 API Docs Website</a>
+>>>>>>> 3d1a104 (Update docs and polish downstream frontend outputs)
 </p>
 
 <p align="center">
@@ -71,6 +75,7 @@ With the client, you can:
 ## 📑 Table of Contents
 
 - [✨ Overview](#-overview)
+<<<<<<< HEAD
 - [🚀 Quick Start](#-quick-start)
 - [🔑 API Token](#-api-token)
 - [🧠 What SciNet Does](#-what-scinet-does)
@@ -86,6 +91,46 @@ With the client, you can:
 - [🧯 Troubleshooting](#-troubleshooting)
 - [🗺️ Roadmap](#-roadmap)
 - [✍️ Citation](#-citation)
+=======
+- [� Table of Contents](#-table-of-contents)
+- [🚀 Quick Start](#-quick-start)
+  - [1. Install](#1-install)
+  - [2. Register an API Token](#2-register-an-api-token)
+  - [3. Configure](#3-configure)
+  - [4. Test](#4-test)
+  - [5. Run a Paper Search](#5-run-a-paper-search)
+- [🔑 API Token](#-api-token)
+  - [Browser Registration](#browser-registration)
+  - [Check Token Status](#check-token-status)
+  - [Check Usage](#check-usage)
+- [🧠 What SciNet Does](#-what-scinet-does)
+- [🧩 Supported Tasks](#-supported-tasks)
+- [🛠️ CLI-First Workflow](#️-cli-first-workflow)
+  - [Help](#help)
+  - [Basic Retrieval](#basic-retrieval)
+  - [Retrieval Modes](#retrieval-modes)
+  - [Expert Anchors](#expert-anchors)
+  - [Graph Bias Parameters](#graph-bias-parameters)
+- [🧰 Editable Skills](#-editable-skills)
+- [🐍 Python SDK](#-python-sdk)
+- [⚙️ Configuration](#️-configuration)
+- [🧪 Examples](#-examples)
+  - [Literature Review](#literature-review)
+  - [Idea Evaluation](#idea-evaluation)
+  - [Idea Generation](#idea-generation)
+  - [Trend Report](#trend-report)
+  - [Researcher Review](#researcher-review)
+- [📦 Outputs and Artifacts](#-outputs-and-artifacts)
+- [🛠️ GROBID for PDF Workflows](#️-grobid-for-pdf-workflows)
+- [📂 Repository Layout](#-repository-layout)
+- [🧯 Troubleshooting](#-troubleshooting)
+  - [`scinet health` works but `search-papers` returns 401](#scinet-health-works-but-search-papers-returns-401)
+  - [No email verification code](#no-email-verification-code)
+  - [Retrieval is slow or times out](#retrieval-is-slow-or-times-out)
+  - [`scinet` command is not found on Windows](#scinet-command-is-not-found-on-windows)
+- [📝 TODO](#-todo)
+- [✍️ Citation](#️-citation)
+>>>>>>> 3d1a104 (Update docs and polish downstream frontend outputs)
 - [📄 License](#-license)
 
 ---
@@ -568,17 +613,18 @@ or reinstall:
 
 ---
 
+<<<<<<< HEAD
 ## 🗺️ Roadmap
+=======
+## 📝 TODO
+>>>>>>> 3d1a104 (Update docs and polish downstream frontend outputs)
 
-- [ ] PyPI release for `pip install scinet-client`
-- [ ] `scinet auth login/status/usage`
-- [ ] More built-in skills for agent workflows
-- [ ] Token reset and revoke support
-- [ ] API playground
-- [ ] MCP / agent runtime integration
-- [ ] Broader knowledge types beyond papers, such as datasets, code, standards, theorems, and experimental experience
-- [ ] Dedicated benchmarks for scientific research tasks
-- [ ] More systematic dynamic knowledge updates
+- [ ] **CLI Tools.** Add more user-facing CLI capabilities so downstream users and AI agents can invoke retrieval workflows without touching database internals.
+- [ ] **Skills.** Package reusable agent skills for common scientific discovery workflows and expose best practices as easier-to-load components.
+- [ ] **More Knowledge.** Integrate more knowledge forms beyond paper-centric entities, such as datasets, code, standards, theorems, and experimental experience.
+- [ ] **Benchmark and Evaluation.** Build dedicated benchmarks and evaluation protocols for downstream scientific research tasks supported by SciNet.
+- [ ] **Dynamic Update**Improve dynamic knowledge updates toward a more systematic and frequent refresh mechanism.
+- [ ] **Dynamic Update.** Improve dynamic knowledge updates toward a more systematic and frequent refresh mechanism.
 
 ---
 
@@ -586,13 +632,8 @@ or reinstall:
 
 If you find SciNet helpful, please cite:
 
-```bibtex
-@article{scinet2026,
-  title={SciNet: A Large-Scale Knowledge Graph for Automated Scientific Research},
-  author={SciNet Team},
-  journal={arXiv preprint arXiv:2602.14367},
-  year={2026}
-}
+```
+
 ```
 
 ---
